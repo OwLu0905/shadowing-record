@@ -8,39 +8,38 @@ import useRecordMedia from "@/hooks/useRecordMedia";
 
 const Record = () => {
   const {
-    mediaRef,
+    media,
     accept,
     handleTriggerStart,
     handleStartRecord,
     handleStopRecord,
     handlePauseRecord,
     handleAcceptRecord,
-    isRecording,
+    handleResumeRecord,
   } = useRecordMedia();
 
   return (
     <div>
       <div className="flex space-x-4 items-center">
         <Input placeholder="enter the url" />
-        {!accept || !isRecording ? (
-          <Button
-            type="button"
-            variant={"secondary"}
-            onClick={async () => {
-              await handleTriggerStart();
-            }}
-          >
-            <Mic className="mr-2 h-4 w-4" /> Record
-          </Button>
-        ) : (
-          <Button
-            onClick={() => {
-              handlePauseRecord();
-            }}
-          >
-            <Pause className="mr-2 h-4 w-4" /> Paused
-          </Button>
-        )}
+        <Button
+          type="button"
+          variant={"secondary"}
+          onClick={async () => {
+            await handleTriggerStart();
+          }}
+        >
+          <Mic className="mr-2 h-4 w-4" /> {media?.state ?? "Record"}
+        </Button>
+
+        <Button
+          onClick={() => {
+            handlePauseRecord();
+          }}
+        >
+          <Pause className="mr-2 h-4 w-4" /> Paused
+        </Button>
+
         <Button
           type="button"
           onClick={() => {

@@ -2,10 +2,8 @@ import { useRef, useState } from "react";
 import { MEDIA_CONSTRAINT } from "@/lib/constants";
 
 const useRecordMedia = () => {
-  const mediaRef = useRef<MediaRecorder | null>(null);
+  const [media, setMedia] = useState<MediaRecorder | null>(null);
   const [accept, setAccept] = useState(false);
-
-  const [isRecording, setIsRecording] = useState(false);
 
   async function handleConnectRecord(): Promise<MediaRecorder | null> {
     return navigator.mediaDevices
@@ -19,15 +17,15 @@ const useRecordMedia = () => {
   }
 
   async function handleTriggerStart() {
-    if (mediaRef.current) {
-      await handleStartRecord(mediaRef.current);
+    if (media) {
+      await handleStartRecord(media);
       return;
     }
     try {
       const stream = await handleConnectRecord();
       if (stream) {
         setAccept(true);
-        mediaRef.current = stream;
+        setMedia(stream);
         await handleStartRecord(stream);
       }
     } catch (err) {
@@ -39,25 +37,30 @@ const useRecordMedia = () => {
     stream.start();
     console.log(stream.state);
     console.log("recorder started");
-    setIsRecording(true);
     stream.ondataavailable = (e) => {
       console.log("ondataavailable", e.data);
     };
   }
 
   function handleStopRecord() {
-    if (mediaRef.current === null) return;
-    mediaRef.current.stop();
-    console.log(mediaRef.current.state);
+    if (media === null) return;
+    media.stop();
+    console.log(media.state);
     console.log("recorder stopped");
   }
 
   function handlePauseRecord() {
-    if (mediaRef.current === null) return;
-    mediaRef.current.pause();
-    setIsRecording(false);
-    console.log(mediaRef.current.state);
+    if (media === null) return;
+    media.pause();
+    console.log(media.state);
     console.log("recorder paused");
+  }
+
+  function handleResumeRecord() {
+    if (media === null) return;
+    media.resume();
+    console.log(media.state);
+    console.log("recorder resume");
   }
 
   async function handleAcceptRecord() {
@@ -65,15 +68,14 @@ const useRecordMedia = () => {
   }
 
   return {
-    mediaRef,
+    media,
     accept,
     handleAcceptRecord,
     handleTriggerStart,
     handleStartRecord,
     handlePauseRecord,
     handleStopRecord,
-    isRecording,
-    setIsRecording,
+    handleResumeRecord,
   };
 };
 
