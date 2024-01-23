@@ -1,14 +1,31 @@
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { MEDIA_CONSTRAINT } from "@/lib/constants";
 
 const useRecordMedia = () => {
   const [media, setMedia] = useState<MediaRecorder | null>(null);
   const [accept, setAccept] = useState(false);
+  const [streamData, setStreamData] = useState<MediaStream | undefined>(
+    undefined
+  );
+  const [recordDataUrl, setRecordDataUrl] = useState<any>(undefined);
+  const [mediaState, setMediaState] = useState<RecordingState | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    if (media) {
+      media.ondataavailable = (e) => {
+        console.log("ondataavailable", e.data);
+        setRecordDataUrl(URL.createObjectURL(e.data));
+      };
+    }
+  }, [media, recordDataUrl]);
 
   async function handleConnectRecord(): Promise<MediaRecorder | null> {
     return navigator.mediaDevices
       .getUserMedia(MEDIA_CONSTRAINT)
       .then((stream) => {
+        setStreamData(stream);
         return new MediaRecorder(stream);
       })
       .catch((_) => {
@@ -32,47 +49,52 @@ const useRecordMedia = () => {
       console.error(err);
     }
   }
-  async function handleStartRecord(stream: MediaRecorder) {
-    if (stream === null) return;
-    stream.start();
-    console.log(stream.state);
-    console.log("recorder started");
-    stream.ondataavailable = (e) => {
-      console.log("ondataavailable", e.data);
-    };
+
+  async function handleStartRecord(media: MediaRecorder) {
+    if (media === null) return;
+    media.start();
+    setMediaState("recording");
   }
 
   function handleStopRecord() {
     if (media === null) return;
     media.stop();
-    console.log(media.state);
-    console.log("recorder stopped");
+    setMediaState("inactive");
   }
 
   function handlePauseRecord() {
     if (media === null) return;
     media.pause();
-    console.log(media.state);
-    console.log("recorder paused");
+    setMediaState("paused");
   }
 
   function handleResumeRecord() {
     if (media === null) return;
     media.resume();
-    console.log(media.state);
-    console.log("recorder resume");
+    setMediaState("recording");
   }
 
-  async function handleAcceptRecord() {
-    setAccept(true);
+  function disconnect() {
+    URL.revokeObjectURL(recordDataUrl);
+    if (streamData) {
+      streamData.getTracks().forEach((track) => {
+        track.stop();
+      });
+    }
+
+    setStreamData(undefined);
+    setMedia(null);
+    setMediaState(undefined);
+    setAccept(false);
   }
 
   return {
     media,
     accept,
-    handleAcceptRecord,
+    mediaState,
+    recordDataUrl,
+    disconnect,
     handleTriggerStart,
-    handleStartRecord,
     handlePauseRecord,
     handleStopRecord,
     handleResumeRecord,
