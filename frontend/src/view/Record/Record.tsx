@@ -2,9 +2,17 @@
 import React from "react";
 
 import { Input } from "@/components/ui/input";
-import { DoorClosedIcon, Download, Mic, Pause, StopCircle } from "lucide-react";
+import {
+  DoorClosedIcon,
+  Download,
+  Mic,
+  Pause,
+  StepForward,
+  StopCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import useRecordMedia from "@/hooks/useRecordMedia";
+import useCountSec from "@/hooks/useCountSec";
 
 const Record = () => {
   const {
@@ -18,6 +26,11 @@ const Record = () => {
     handlePauseRecord,
     handleResumeRecord,
   } = useRecordMedia();
+
+  const { time, startTimer, toggleTimer, resetTimer } = useCountSec({
+    targetSec: 100,
+    type: "mm:ss",
+  });
 
   return (
     <div>
@@ -48,7 +61,7 @@ const Record = () => {
                 handleResumeRecord();
               }}
             >
-              <Mic className="mr-2 h-4 w-4" /> Resume
+              <StepForward className="mr-2 h-4 w-4" /> Resume
             </Button>
           ) : null}
 
@@ -60,7 +73,7 @@ const Record = () => {
                 handlePauseRecord();
               }}
             >
-              <StopCircle className="mr-2 h-4 w-4" /> Pause
+              <Pause className="mr-2 h-4 w-4" /> Pause
             </Button>
           ) : null}
 
@@ -85,6 +98,11 @@ const Record = () => {
         <Button type="button" className="self-end p-2" onClick={disconnect}>
           <DoorClosedIcon className="w-6 h-6" />
         </Button>
+        <div className="flex space-x-4">
+          <Button onClick={startTimer}>count :{time}</Button>
+          <Button onClick={toggleTimer}>stop</Button>
+          <Button onClick={resetTimer}>rest</Button>
+        </div>
       </div>
     </div>
   );

@@ -4,11 +4,14 @@ import { MEDIA_CONSTRAINT } from "@/lib/constants";
 const useRecordMedia = () => {
   const [media, setMedia] = useState<MediaRecorder | null>(null);
   const [accept, setAccept] = useState(false);
+  const [mediaState, setMediaState] = useState<RecordingState | undefined>(
+    undefined
+  );
   const [streamData, setStreamData] = useState<MediaStream | undefined>(
     undefined
   );
-  const [recordDataUrl, setRecordDataUrl] = useState<any>(undefined);
-  const [mediaState, setMediaState] = useState<RecordingState | undefined>(
+  const [recordData, setRecordData] = useState<Blob[]>([]);
+  const [recordDataUrl, setRecordDataUrl] = useState<string | undefined>(
     undefined
   );
 
@@ -16,10 +19,25 @@ const useRecordMedia = () => {
     if (media) {
       media.ondataavailable = (e) => {
         console.log("ondataavailable", e.data);
-        setRecordDataUrl(URL.createObjectURL(e.data));
+        setRecordData((prev) => {
+          // Create a new blob including the new data
+          const updatedRecordData = [...prev, e.data];
+          const blob = new Blob(updatedRecordData, { type: "video/webm" });
+
+          // Update the recordDataUrl
+          setRecordDataUrl((prevUrl) => {
+            // Revoke the previous URL to free up memory
+            if (prevUrl) {
+              URL.revokeObjectURL(prevUrl);
+            }
+            return URL.createObjectURL(blob);
+          });
+
+          return updatedRecordData;
+        });
       };
     }
-  }, [media, recordDataUrl]);
+  }, [media]);
 
   async function handleConnectRecord(): Promise<MediaRecorder | null> {
     return navigator.mediaDevices
@@ -75,7 +93,9 @@ const useRecordMedia = () => {
   }
 
   function disconnect() {
-    URL.revokeObjectURL(recordDataUrl);
+    if (recordDataUrl) {
+      URL.revokeObjectURL(recordDataUrl);
+    }
     if (streamData) {
       streamData.getTracks().forEach((track) => {
         track.stop();
