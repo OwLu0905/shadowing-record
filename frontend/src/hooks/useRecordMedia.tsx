@@ -1,129 +1,134 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MEDIA_CONSTRAINT } from "@/lib/constants";
 
 const useRecordMedia = () => {
-  const [media, setMedia] = useState<MediaRecorder | null>(null);
-  const [accept, setAccept] = useState(false);
-  const [mediaState, setMediaState] = useState<RecordingState | undefined>(
-    undefined
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null
   );
-  const [streamData, setStreamData] = useState<MediaStream | undefined>(
-    undefined
-  );
-  const [blobData, setBlobData] = useState<Blob | undefined>(undefined);
-  const [recordData, setRecordData] = useState<Blob[]>([]);
-  const [recordDataUrl, setRecordDataUrl] = useState<string | undefined>(
-    undefined
-  );
+
+  const [recordBlob, setRecordBlob] = useState<Blob | null>(null);
+  const [recordBlobUrl, setRecordBlobUrl] = useState<string | null>(null);
+
+  const [isReady, setIsReady] = useState(false); // Reintroduced isReady state
+  const [mediaState, setMediaState] = useState<RecordingState>("inactive");
+
+  /** Function to initialize media stream and recorder */
+  const initMediaStream = useCallback(async () => {
+    setIsReady(false);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia(
+        MEDIA_CONSTRAINT
+      );
+      setMediaStream(stream);
+      const recorder = new MediaRecorder(stream);
+      setMediaRecorder(recorder);
+      setIsReady(true);
+    } catch (err) {
+      console.error("Error accessing media devices:", err);
+      setIsReady(false);
+    }
+  }, []);
 
   useEffect(() => {
-    if (media) {
-      media.ondataavailable = (e) => {
-        console.log("ondataavailable", e.data);
-        setRecordData((prev) => {
-          // Create a new blob including the new data
-          const updatedRecordData = [...prev, e.data];
-          const blob = new Blob(updatedRecordData, { type: "video/webm" });
-          setBlobData(blob);
+    initMediaStream();
 
-          // Update the recordDataUrl
-          setRecordDataUrl((prevUrl) => {
-            // Revoke the previous URL to free up memory
-            if (prevUrl) {
-              URL.revokeObjectURL(prevUrl);
-            }
-            return URL.createObjectURL(blob);
-          });
+    return () => {
+      mediaStream?.getTracks().forEach((track) => track.stop());
+      setIsReady(false); // Reset isReady when cleaning up
+    };
+  }, [initMediaStream]);
 
-          return updatedRecordData;
-        });
-      };
-    }
-  }, [media]);
+  // Setup event listeners for the media recorder.
+  useEffect(() => {
+    if (!mediaRecorder) return;
 
-  async function handleConnectRecord(): Promise<MediaRecorder | null> {
-    return navigator.mediaDevices
-      .getUserMedia(MEDIA_CONSTRAINT)
-      .then((stream) => {
-        setStreamData(stream);
-        return new MediaRecorder(stream);
-      })
-      .catch((_) => {
-        throw Error("mic is not available");
-      });
-  }
-
-  async function handleTriggerStart() {
-    if (media) {
-      await handleStartRecord(media);
-      return;
-    }
-    try {
-      const stream = await handleConnectRecord();
-      if (stream) {
-        setAccept(true);
-        setMedia(stream);
-        await handleStartRecord(stream);
+    const handleDataAvailable = (event: BlobEvent) => {
+      if (event.data.size > 0) {
+        setRecordBlob(event.data);
+        const url = URL.createObjectURL(event.data);
+        setRecordBlobUrl(url);
       }
-    } catch (err) {
-      console.error(err);
-    }
-  }
+    };
 
-  async function handleStartRecord(media: MediaRecorder) {
-    if (media === null) return;
-    media.start();
+    mediaRecorder.addEventListener("dataavailable", handleDataAvailable);
+
+    return () => {
+      mediaRecorder.removeEventListener("dataavailable", handleDataAvailable);
+      if (recordBlobUrl) {
+        URL.revokeObjectURL(recordBlobUrl);
+      }
+    };
+  }, [mediaRecorder, recordBlobUrl]);
+
+  // Start recording
+  const startRecording = () => {
+    if (!mediaRecorder || mediaState === "recording") return;
+    mediaRecorder.start();
     setMediaState("recording");
-  }
-
-  function handleStopRecord() {
-    if (media === null) return;
-    media.stop();
-    setMediaState("inactive");
-  }
-
-  function handlePauseRecord() {
-    if (media === null) return;
-    media.pause();
-    setMediaState("paused");
-  }
-
-  function handleResumeRecord() {
-    if (media === null) return;
-    media.resume();
-    setMediaState("recording");
-  }
-
-  function disconnect() {
-    if (recordDataUrl) {
-      URL.revokeObjectURL(recordDataUrl);
-    }
-    if (streamData) {
-      streamData.getTracks().forEach((track) => {
-        track.stop();
-      });
-    }
-
-    setStreamData(undefined);
-    setMedia(null);
-    setMediaState(undefined);
-    setAccept(false);
-  }
-
-  return {
-    streamData,
-    media,
-    accept,
-    mediaState,
-    recordData,
-    blobData,
-    recordDataUrl,
-    disconnect,
-    handleTriggerStart,
-    handlePauseRecord,
-    handleStopRecord,
-    handleResumeRecord,
   };
+
+  // Stop recording
+  const stopRecording = () => {
+    if (!mediaRecorder) return;
+    if (mediaState === "recording" || mediaState === "paused") {
+      mediaRecorder.stop();
+      setMediaState("inactive");
+    }
+  };
+
+  // Pause recording
+  const pauseRecording = () => {
+    if (!mediaRecorder || mediaState !== "recording") return;
+    mediaRecorder.pause();
+    setMediaState("paused");
+  };
+
+  // Resume recording
+  const resumeRecording = () => {
+    if (!mediaRecorder || mediaState !== "paused") return;
+    mediaRecorder.resume();
+    setMediaState("recording");
+  };
+
+  // Disconnect and cleanup
+  const disconnect = useCallback(() => {
+    mediaStream?.getTracks().forEach((track) => track.stop());
+    setMediaStream(null);
+    setMediaRecorder(null);
+    setMediaState("inactive");
+    if (recordBlobUrl) {
+      URL.revokeObjectURL(recordBlobUrl);
+      setRecordBlobUrl(null);
+    }
+    setRecordBlob(null);
+  }, [mediaStream, recordBlobUrl]);
+
+  // TODO: requsetData
+
+  const returnState = {
+    data: {
+      srteam: mediaStream,
+      blob: recordBlob,
+      url: recordBlobUrl,
+    },
+
+    state: {
+      mediaState: mediaState,
+      deviceState: isReady,
+    },
+
+    utils: {
+      start: startRecording,
+      stop: stopRecording,
+      pause: pauseRecording,
+      resume: resumeRecording,
+      disconnect: disconnect,
+      initialize: initMediaStream,
+    },
+  };
+
+  return returnState;
 };
 
 export default useRecordMedia;
