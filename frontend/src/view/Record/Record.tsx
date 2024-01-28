@@ -33,7 +33,6 @@ const Record = () => {
       </div>
     );
 
-  console.log("few");
   return (
     <div>
       <div className="flex flex-col gap-4 items-center">
