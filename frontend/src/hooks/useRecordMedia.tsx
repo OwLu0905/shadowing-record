@@ -10,6 +10,7 @@ const useRecordMedia = () => {
   const [streamData, setStreamData] = useState<MediaStream | undefined>(
     undefined
   );
+  const [blobData, setBlobData] = useState<Blob | undefined>(undefined);
   const [recordData, setRecordData] = useState<Blob[]>([]);
   const [recordDataUrl, setRecordDataUrl] = useState<string | undefined>(
     undefined
@@ -23,6 +24,7 @@ const useRecordMedia = () => {
           // Create a new blob including the new data
           const updatedRecordData = [...prev, e.data];
           const blob = new Blob(updatedRecordData, { type: "video/webm" });
+          setBlobData(blob);
 
           // Update the recordDataUrl
           setRecordDataUrl((prevUrl) => {
@@ -109,9 +111,12 @@ const useRecordMedia = () => {
   }
 
   return {
+    streamData,
     media,
     accept,
     mediaState,
+    recordData,
+    blobData,
     recordDataUrl,
     disconnect,
     handleTriggerStart,
