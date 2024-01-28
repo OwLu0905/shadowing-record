@@ -2,14 +2,14 @@ import { useCallback, useEffect, useState } from "react";
 
 import { format } from "date-fns";
 
-type UseCountSecProps = {
+type UseElapsedTimeProps = {
   targetSec: number;
   type: "mm:ss" | "ss";
 };
 
 const INITIAL_TIMER = 0;
 
-const useCountSec = (props: UseCountSecProps) => {
+const useElapsedTime = (props: UseElapsedTimeProps) => {
   const { targetSec, type } = props;
   const [seconds, setSeconds] = useState(INITIAL_TIMER);
   const [isActive, setIsActive] = useState(false);
@@ -62,13 +62,23 @@ const useCountSec = (props: UseCountSecProps) => {
     setIsActive(false);
   };
 
+  const stopTimer = useCallback(() => {
+    setIsActive(false);
+  }, []);
+
+  const activeTimer = (state: boolean) => {
+    setIsActive(state);
+  };
+
   return {
     time: formatTime(seconds),
     active: isActive,
     startTimer,
     toggleTimer,
     resetTimer,
+    stopTimer,
+    activeTimer,
   };
 };
 
-export default useCountSec;
+export default useElapsedTime;

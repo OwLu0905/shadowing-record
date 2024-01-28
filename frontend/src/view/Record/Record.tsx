@@ -12,25 +12,18 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import useRecordMedia from "@/hooks/useRecordMedia";
-import useCountSec from "@/hooks/useCountSec";
+import useElapsedTime from "@/hooks/useElapsedTime";
 
 const Record = () => {
-  const { data, state, utils } = useRecordMedia();
+  const { data, state, utils, timer } = useRecordMedia();
   const recordDataUrl = data.url;
   const mediaState = state.mediaState;
   const isAvailable = state.deviceState;
+  const time = timer.time;
 
   const { start, stop, pause, resume, disconnect, initialize } = utils;
 
-  const [startTime, setStartTime] = useState(2);
-  const [endTime, setEndTime] = useState(5);
-
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const { time, startTimer, toggleTimer, resetTimer } = useCountSec({
-    targetSec: 100,
-    type: "mm:ss",
-  });
 
   if (!isAvailable)
     return (
@@ -40,11 +33,16 @@ const Record = () => {
       </div>
     );
 
+  console.log("few");
   return (
     <div>
       <div className="flex flex-col gap-4 items-center">
         <div className="flex flex-col ">
-          {recordDataUrl ? <audio src={recordDataUrl} controls></audio> : null}
+          {mediaState !== "inactive" ? (
+            "Recording..."
+          ) : recordDataUrl ? (
+            <audio src={recordDataUrl} controls></audio>
+          ) : null}
           <canvas
             ref={canvasRef}
             width="550"
@@ -84,14 +82,11 @@ const Record = () => {
           ) : null}
           <Download className="w-10 h-10" />
         </div>
-
         <Button type="button" className="self-end p-2" onClick={disconnect}>
           <DoorClosedIcon className="w-6 h-6" />
         </Button>
         <div className="flex space-x-4">
-          <Button onClick={startTimer}>count :{time}</Button>
-          <Button onClick={toggleTimer}>stop</Button>
-          <Button onClick={resetTimer}>rest</Button>
+          <Button>count :{time}</Button>
         </div>
       </div>
     </div>

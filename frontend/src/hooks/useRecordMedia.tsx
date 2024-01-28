@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { MEDIA_CONSTRAINT } from "@/lib/constants";
+import useElapsedTime from "./useElapsedTime";
 
 const useRecordMedia = () => {
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
@@ -12,6 +13,12 @@ const useRecordMedia = () => {
 
   const [isReady, setIsReady] = useState(false); // Reintroduced isReady state
   const [mediaState, setMediaState] = useState<RecordingState>("inactive");
+
+  // NOTE: integrate the timer
+  const { time, startTimer, resetTimer, activeTimer } = useElapsedTime({
+    targetSec: 100,
+    type: "mm:ss",
+  });
 
   /** Function to initialize media stream and recorder */
   const initMediaStream = useCallback(async () => {
@@ -47,6 +54,7 @@ const useRecordMedia = () => {
       if (event.data.size > 0) {
         setRecordBlob(event.data);
         const url = URL.createObjectURL(event.data);
+
         setRecordBlobUrl(url);
       }
     };
@@ -65,6 +73,7 @@ const useRecordMedia = () => {
   const startRecording = () => {
     if (!mediaRecorder || mediaState === "recording") return;
     mediaRecorder.start();
+    startTimer();
     setMediaState("recording");
   };
 
@@ -73,6 +82,7 @@ const useRecordMedia = () => {
     if (!mediaRecorder) return;
     if (mediaState === "recording" || mediaState === "paused") {
       mediaRecorder.stop();
+      resetTimer();
       setMediaState("inactive");
     }
   };
@@ -81,6 +91,7 @@ const useRecordMedia = () => {
   const pauseRecording = () => {
     if (!mediaRecorder || mediaState !== "recording") return;
     mediaRecorder.pause();
+    activeTimer(false);
     setMediaState("paused");
   };
 
@@ -88,15 +99,25 @@ const useRecordMedia = () => {
   const resumeRecording = () => {
     if (!mediaRecorder || mediaState !== "paused") return;
     mediaRecorder.resume();
+    activeTimer(true);
     setMediaState("recording");
   };
 
+  const resetState = useCallback(() => {
+    setMediaStream(null);
+    setMediaRecorder(null);
+    setRecordBlob(null);
+    setRecordBlobUrl(null);
+    setMediaState("inactive");
+    resetTimer();
+  }, []);
   // Disconnect and cleanup
   const disconnect = useCallback(() => {
     mediaStream?.getTracks().forEach((track) => track.stop());
     setMediaStream(null);
     setMediaRecorder(null);
     setMediaState("inactive");
+    resetTimer();
     if (recordBlobUrl) {
       URL.revokeObjectURL(recordBlobUrl);
       setRecordBlobUrl(null);
@@ -125,6 +146,9 @@ const useRecordMedia = () => {
       resume: resumeRecording,
       disconnect: disconnect,
       initialize: initMediaStream,
+    },
+    timer: {
+      time,
     },
   };
 
