@@ -1,13 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MEDIA_CONSTRAINT } from "@/lib/constants";
 import useElapsedTime from "./useElapsedTime";
 import { usePathname } from "next/navigation";
 
 const useRecordMedia = () => {
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-    null
-  );
+  const mediaRef = useRef<MediaRecorder | null>(null);
 
   const [recordBlob, setRecordBlob] = useState<Blob | null>(null);
   const [recordBlobUrl, setRecordBlobUrl] = useState<string | null>(null);
@@ -37,7 +35,7 @@ const useRecordMedia = () => {
   }, [disconnect, pathname]);
 
   useEffect(() => {
-    if (!mediaRecorder) return;
+    if (!mediaRef.current || !isReady) return;
 
     const handleDataAvailable = (event: BlobEvent) => {
       if (event.data.size > 0) {
@@ -48,20 +46,25 @@ const useRecordMedia = () => {
       }
     };
 
-    mediaRecorder.addEventListener("dataavailable", handleDataAvailable);
+    mediaRef.current.addEventListener("dataavailable", handleDataAvailable);
 
     return () => {
-      mediaRecorder.removeEventListener("dataavailable", handleDataAvailable);
+      if (mediaRef.current) {
+        mediaRef.current.removeEventListener(
+          "dataavailable",
+          handleDataAvailable
+        );
+      }
       if (recordBlobUrl) {
         URL.revokeObjectURL(recordBlobUrl);
       }
     };
-  }, [mediaRecorder, recordBlobUrl]);
+  }, [isReady, recordBlobUrl]);
 
   const startRecording = async () => {
     if (mediaState === "recording") return;
 
-    if (mediaRecorder === null) {
+    if (mediaRef.current === null) {
       setIsReady(undefined);
       try {
         const stream = await navigator.mediaDevices.getUserMedia(
@@ -69,8 +72,8 @@ const useRecordMedia = () => {
         );
         setMediaStream(stream);
         const recorder = new MediaRecorder(stream);
-        recorder.start();
-        setMediaRecorder(recorder);
+        mediaRef.current = recorder;
+        mediaRef.current.start();
         startTimer();
         setMediaState("recording");
         setIsReady(true);
@@ -79,39 +82,40 @@ const useRecordMedia = () => {
         setIsReady(false);
       }
     } else {
-      mediaRecorder.start();
+      mediaRef.current.start();
       startTimer();
       setMediaState("recording");
     }
   };
 
   const stopRecording = () => {
-    if (!mediaRecorder) return;
+    if (!mediaRef.current) return;
     if (mediaState === "recording" || mediaState === "paused") {
-      mediaRecorder.stop();
+      mediaRef.current.stop();
       resetTimer();
       setMediaState("inactive");
+      mediaRef.current = null;
       disconnect();
     }
   };
 
   const pauseRecording = () => {
-    if (!mediaRecorder || mediaState !== "recording") return;
-    mediaRecorder.pause();
+    if (!mediaRef.current || mediaState !== "recording") return;
+    mediaRef.current.pause();
     activeTimer(false);
     setMediaState("paused");
   };
 
   const resumeRecording = () => {
-    if (!mediaRecorder || mediaState !== "paused") return;
-    mediaRecorder.resume();
+    if (!mediaRef.current || mediaState !== "paused") return;
+    mediaRef.current.resume();
     activeTimer(true);
     setMediaState("recording");
   };
 
   const resetState = useCallback(() => {
     setMediaStream(null);
-    setMediaRecorder(null);
+    mediaRef.current = null;
     setRecordBlob(null);
     setRecordBlobUrl(null);
     setMediaState("inactive");
@@ -121,7 +125,7 @@ const useRecordMedia = () => {
   const cleanupResources = useCallback(() => {
     mediaStream?.getTracks().forEach((track) => track.stop());
     setMediaStream(null);
-    setMediaRecorder(null);
+    mediaRef.current = null;
     setMediaState("inactive");
     resetTimer();
     if (recordBlobUrl) {
