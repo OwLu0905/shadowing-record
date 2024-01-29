@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import useRecordMedia from "@/hooks/useRecordMedia";
 import useElapsedTime from "@/hooks/useElapsedTime";
+import Link from "next/link";
 
 const Record = () => {
   const { data, state, utils, timer } = useRecordMedia();
@@ -21,11 +22,11 @@ const Record = () => {
   const isAvailable = state.deviceState;
   const time = timer.time;
 
-  const { start, stop, pause, resume, disconnect, initialize } = utils;
+  const { start, stop, pause, resume, disconnect, cleanup } = utils;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  if (!isAvailable)
+  if (isAvailable === false)
     return (
       <div>
         Please check whether the record device available or the permission of
@@ -35,6 +36,8 @@ const Record = () => {
 
   return (
     <div>
+      <Link href="/test">test</Link>
+      <Button onClick={cleanup}>Disconnect</Button>
       <div className="flex flex-col gap-4 items-center">
         <div className="flex flex-col ">
           {mediaState !== "inactive" ? (
