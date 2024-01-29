@@ -25,31 +25,29 @@ const AudioWaveform = () => {
           ? startSize.right + startPosition.x - mouseMoveEvent.clientX
           : startSize.left - startPosition.x + mouseMoveEvent.clientX;
 
+      const distanceBound = distance >= 0 ? distance : 0;
+
       const boundry = type === "right" ? startSize.left : startSize.right;
       if (
         canvasRef.current &&
-        distance + boundry + 8 >=
+        distance + boundry + 0 >=
           canvasRef.current?.getBoundingClientRect().width
       ) {
         return;
       }
 
       if (type === "left") {
-        if (distance >= 0) {
-          setSelectedInterval((currentSize) => ({
-            ...currentSize,
-            left: distance,
-          }));
-        }
+        setSelectedInterval((currentSize) => ({
+          ...currentSize,
+          left: distanceBound,
+        }));
       }
 
       if (type === "right") {
-        if (distance >= 0) {
-          setSelectedInterval((currentSize) => ({
-            ...currentSize,
-            right: distance,
-          }));
-        }
+        setSelectedInterval((currentSize) => ({
+          ...currentSize,
+          right: distanceBound,
+        }));
       }
     };
 
@@ -75,11 +73,13 @@ const AudioWaveform = () => {
         }}
       >
         <div
-          className="border border-red-700 z-10 h-full region-handle region-handle-right absolute left-0 bg-red-500 hover:cursor-ew-resize"
+          aria-label="region-handle-left"
+          className="border border-red-700 z-10 h-[120%] top-0 bottom-0 my-auto absolute left-0 bg-red-500 hover:cursor-ew-resize"
           onMouseDown={(e) => onMouseDown(e, "left")}
         ></div>
         <div
-          className="border border-sky-700 z-10 h-full region-handle region-handle-right absolute right-0 bg-pink-500 hover:cursor-ew-resize"
+          aria-label="region-handle-right"
+          className="border border-sky-700 z-10 h-[120%] top-0 bottom-0 my-auto absolute right-0 bg-pink-500 hover:cursor-ew-resize"
           onMouseDown={(e) => onMouseDown(e, "right")}
         ></div>
       </div>
