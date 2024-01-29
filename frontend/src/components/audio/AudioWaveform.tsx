@@ -1,104 +1,88 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
+import { throttle } from "@/util/throttle";
+import React, { useRef, useState } from "react";
 
 const AudioWaveform = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const regionRef = useRef<HTMLDivElement>(null);
   const [selectedInterval, setSelectedInterval] = useState({
     left: 0,
     right: 0,
   });
 
-  const onMouseDown = (mouseDownEvent: MouseEvent) => {
+  const onMouseDown = (
+    mouseDownEvent: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    type: "right" | "left"
+  ) => {
     mouseDownEvent.stopPropagation();
     const startPosition = { x: mouseDownEvent.clientX };
     const startSize = selectedInterval;
 
     const onMouseMove = (mouseMoveEvent: MouseEvent) => {
       mouseMoveEvent.stopPropagation();
-      const rightDistance =
-        startSize.right + startPosition.x - mouseMoveEvent.clientX;
+      const distance =
+        type === "right"
+          ? startSize.right + startPosition.x - mouseMoveEvent.clientX
+          : startSize.left - startPosition.x + mouseMoveEvent.clientX;
 
+      const boundry = type === "right" ? startSize.left : startSize.right;
       if (
         canvasRef.current &&
-        rightDistance + startSize.right + 32 >=
+        distance + boundry + 8 >=
           canvasRef.current?.getBoundingClientRect().width
       ) {
         return;
       }
-      if (rightDistance >= 0) {
-        setSelectedInterval((currentSize) => ({
-          ...currentSize,
-          right: rightDistance,
-        }));
+
+      if (type === "left") {
+        if (distance >= 0) {
+          setSelectedInterval((currentSize) => ({
+            ...currentSize,
+            left: distance,
+          }));
+        }
+      }
+
+      if (type === "right") {
+        if (distance >= 0) {
+          setSelectedInterval((currentSize) => ({
+            ...currentSize,
+            right: distance,
+          }));
+        }
       }
     };
 
+    const throttleMove = throttle(onMouseMove, THROTTLE_MOUSE_MOVE_RESIZE);
     const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mousemove", throttleMove);
       document.removeEventListener("mouseup", onMouseUp);
     };
 
-    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mousemove", throttleMove);
     document.addEventListener("mouseup", onMouseUp);
   };
-  console.log(selectedInterval);
+
   return (
-    <div className="waveform-container relative">
-      <canvas ref={canvasRef} className="h-full bg-gray-100"></canvas>
+    <div className="relative">
+      <canvas ref={canvasRef} className="h-full bg-gray-200"></canvas>
 
       <div
-        ref={regionRef}
-        className="progress-region bg-teal-300 absolute top-0 z-5 h-full"
+        className="progress-region bg-green-300/30 absolute top-0 z-5 h-full"
         style={{
           left: selectedInterval.left,
           right: selectedInterval.right,
         }}
       >
         <div
-          className="w-4 z-10 h-full region-handle region-handle-right absolute left-0 bg-red-500 hover:cursor-ew-resize"
-          onMouseDown={(mouseDownEvent) => {
-            mouseDownEvent.stopPropagation();
-            const startPosition = {
-              x: mouseDownEvent.clientX,
-            };
-
-            if (!regionRef.current) return;
-            function onMouseMove(mouseMoveEvent: MouseEvent) {
-              mouseMoveEvent.stopPropagation();
-              const startSize = selectedInterval;
-              const leftDistance =
-                startSize.left - startPosition.x + mouseMoveEvent.clientX;
-              if (leftDistance < 0) return;
-              if (
-                canvasRef.current &&
-                leftDistance + startSize.right + 32 >=
-                  canvasRef.current?.getBoundingClientRect().width
-              ) {
-                return;
-              }
-              setSelectedInterval((currentSize) => ({
-                ...currentSize,
-                left: leftDistance,
-              }));
-            }
-            function onMouseUp() {
-              if (regionRef.current === null) return;
-              regionRef.current.removeEventListener("mousemove", onMouseMove);
-            }
-
-            regionRef.current.addEventListener("mousemove", onMouseMove);
-            regionRef.current.addEventListener("mouseup", onMouseUp, {
-              once: true,
-            });
-          }}
+          className="border border-red-700 z-10 h-full region-handle region-handle-right absolute left-0 bg-red-500 hover:cursor-ew-resize"
+          onMouseDown={(e) => onMouseDown(e, "left")}
         ></div>
         <div
-          className="w-4 z-10 h-full region-handle region-handle-right absolute right-0 bg-pink-500 hover:cursor-ew-resize"
-          onMouseDown={onMouseDown}
+          className="border border-sky-700 z-10 h-full region-handle region-handle-right absolute right-0 bg-pink-500 hover:cursor-ew-resize"
+          onMouseDown={(e) => onMouseDown(e, "right")}
         ></div>
       </div>
-      {/**  <button onClick={handlePlayClick}>Play Selected Region</button> */}
     </div>
   );
 };

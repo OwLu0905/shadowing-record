@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 
 import { Input } from "@/components/ui/input";
 import {
@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import useRecordMedia from "@/hooks/useRecordMedia";
-import useElapsedTime from "@/hooks/useElapsedTime";
 import Link from "next/link";
 
 const Record = () => {
@@ -36,8 +35,7 @@ const Record = () => {
 
   return (
     <div>
-      <Link href="/test">test</Link>
-      <Button onClick={cleanup}>Disconnect</Button>
+      <Link href="/test">Link test</Link>
       <div className="flex flex-col gap-4 items-center">
         <div className="flex flex-col ">
           {mediaState !== "inactive" ? (
