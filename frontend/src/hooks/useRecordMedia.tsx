@@ -62,26 +62,27 @@ const useRecordMedia = () => {
           "dataavailable",
           handleDataAvailable
         );
-      }
-      if (recordBlobUrl) {
-        console.log("fe");
-        URL.revokeObjectURL(recordBlobUrl);
+
+        if (recordBlobUrl) {
+          console.log("fe");
+          URL.revokeObjectURL(recordBlobUrl);
+        }
       }
     };
   }, [isReady, recordBlobUrl]);
 
-  // NOTE: cleanup when page changed
-  useEffect(() => {
-    return () => {
-      if (mediaRef.current) {
-        disconnect();
-      }
-
-      if (recordBlobUrl) {
-        URL.revokeObjectURL(recordBlobUrl);
-      }
-    };
-  }, [disconnect, pathname, recordBlobUrl]);
+  // // NOTE: cleanup when page changed
+  // useEffect(() => {
+  //   return () => {
+  //     if (mediaRef.current) {
+  //       disconnect();
+  //     }
+  //
+  //     if (recordBlobUrl) {
+  //       URL.revokeObjectURL(recordBlobUrl);
+  //     }
+  //   };
+  // }, [disconnect, pathname, recordBlobUrl]);
 
   const initializeDevice = async () => {
     try {
@@ -120,12 +121,7 @@ const useRecordMedia = () => {
 
   const resumeRecording = () => {
     if (!mediaRef.current || mediaState !== "paused") return;
-
-    if (recordBlobUrl) {
-      URL.revokeObjectURL(recordBlobUrl);
-    }
     mediaRef.current.resume();
-
     activeTimer(true);
     setMediaState("recording");
   };
