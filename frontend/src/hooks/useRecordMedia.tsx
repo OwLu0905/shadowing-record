@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MEDIA_CONSTRAINT } from "@/lib/constants";
-import useElapsedTime from "./useElapsedTime";
 import { usePathname } from "next/navigation";
+import useElapsedTime from "./useElapsedTime";
+
 import toast from "react-hot-toast";
+import { MEDIA_CONSTRAINT } from "@/lib/constants";
 
 const useRecordMedia = () => {
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const mediaRef = useRef<MediaRecorder | null>(null);
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
 
   const [recordBlob, setRecordBlob] = useState<Blob | null>(null);
   const [recordBlobUrl, setRecordBlobUrl] = useState<string | null>(null);
@@ -62,27 +63,26 @@ const useRecordMedia = () => {
           "dataavailable",
           handleDataAvailable
         );
+      }
 
-        if (recordBlobUrl) {
-          console.log("fe");
-          URL.revokeObjectURL(recordBlobUrl);
-        }
+      if (recordBlobUrl) {
+        URL.revokeObjectURL(recordBlobUrl);
       }
     };
   }, [isReady, recordBlobUrl]);
 
-  // // NOTE: cleanup when page changed
-  // useEffect(() => {
-  //   return () => {
-  //     if (mediaRef.current) {
-  //       disconnect();
-  //     }
-  //
-  //     if (recordBlobUrl) {
-  //       URL.revokeObjectURL(recordBlobUrl);
-  //     }
-  //   };
-  // }, [disconnect, pathname, recordBlobUrl]);
+  // NOTE: cleanup when page changed
+  useEffect(() => {
+    return () => {
+      if (mediaRef.current) {
+        disconnect();
+      }
+
+      if (recordBlobUrl) {
+        URL.revokeObjectURL(recordBlobUrl);
+      }
+    };
+  }, [disconnect, pathname, recordBlobUrl]);
 
   const initializeDevice = async () => {
     try {
@@ -91,6 +91,11 @@ const useRecordMedia = () => {
       );
       setIsReady(true);
       setMediaStream(stream);
+
+      // NOTE: initial data state
+      setRecordBlob(null);
+      setRecordBlobUrl(null);
+
       const recorder = new MediaRecorder(stream);
       mediaRef.current = recorder;
     } catch (err) {
