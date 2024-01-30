@@ -39,7 +39,7 @@ const Record = () => {
       <div className="flex flex-col gap-4 items-center">
         <div className="flex flex-col ">
           {mediaState !== "inactive" ? (
-            "Recording..."
+            <div className="animate-sparkup">{mediaState}</div>
           ) : recordDataUrl ? (
             <audio src={recordDataUrl} controls></audio>
           ) : null}

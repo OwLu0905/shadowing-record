@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { MEDIA_CONSTRAINT } from "@/lib/constants";
 import useElapsedTime from "./useElapsedTime";
 import { usePathname } from "next/navigation";
+import toast from "react-hot-toast";
 
 const useRecordMedia = () => {
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
@@ -20,19 +21,26 @@ const useRecordMedia = () => {
     type: "mm:ss",
   });
 
+  const _startRecording = useCallback(() => {
+    if (mediaState === "recording") return;
+    if (mediaRef.current === null) return;
+
+    mediaRef.current.start();
+    startTimer();
+    setMediaState("recording");
+  }, [mediaState, startTimer]);
+
   const disconnect = useCallback(() => {
     mediaStream?.getTracks().forEach((track) => track.stop());
   }, [mediaStream]);
 
-  // NOTE: cleanup when page changed
   useEffect(() => {
-    return () => {
-      disconnect();
-      if (recordBlobUrl) {
-        URL.revokeObjectURL(recordBlobUrl);
-      }
-    };
-  }, [disconnect, pathname]);
+    if (isReady && mediaRef.current) {
+      mediaRef.current.start();
+      startTimer();
+      setMediaState("recording");
+    }
+  }, [isReady, startTimer]);
 
   useEffect(() => {
     if (!mediaRef.current || !isReady) return;
@@ -56,35 +64,38 @@ const useRecordMedia = () => {
         );
       }
       if (recordBlobUrl) {
+        console.log("fe");
         URL.revokeObjectURL(recordBlobUrl);
       }
     };
   }, [isReady, recordBlobUrl]);
 
-  const startRecording = async () => {
-    if (mediaState === "recording") return;
-
-    if (mediaRef.current === null) {
-      setIsReady(undefined);
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(
-          MEDIA_CONSTRAINT
-        );
-        setMediaStream(stream);
-        const recorder = new MediaRecorder(stream);
-        mediaRef.current = recorder;
-        mediaRef.current.start();
-        startTimer();
-        setMediaState("recording");
-        setIsReady(true);
-      } catch (err) {
-        console.error("Error accessing media devices:", err);
-        setIsReady(false);
+  // NOTE: cleanup when page changed
+  useEffect(() => {
+    return () => {
+      if (mediaRef.current) {
+        disconnect();
       }
-    } else {
-      mediaRef.current.start();
-      startTimer();
-      setMediaState("recording");
+
+      if (recordBlobUrl) {
+        URL.revokeObjectURL(recordBlobUrl);
+      }
+    };
+  }, [disconnect, pathname, recordBlobUrl]);
+
+  const initializeDevice = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia(
+        MEDIA_CONSTRAINT
+      );
+      setIsReady(true);
+      setMediaStream(stream);
+      const recorder = new MediaRecorder(stream);
+      mediaRef.current = recorder;
+    } catch (err) {
+      console.error("Error accessing media devices:", err);
+      setIsReady(false);
+      toast.error("Error accessing media devices");
     }
   };
 
@@ -96,6 +107,7 @@ const useRecordMedia = () => {
       setMediaState("inactive");
       mediaRef.current = null;
       disconnect();
+      setIsReady(undefined);
     }
   };
 
@@ -108,19 +120,15 @@ const useRecordMedia = () => {
 
   const resumeRecording = () => {
     if (!mediaRef.current || mediaState !== "paused") return;
+
+    if (recordBlobUrl) {
+      URL.revokeObjectURL(recordBlobUrl);
+    }
     mediaRef.current.resume();
+
     activeTimer(true);
     setMediaState("recording");
   };
-
-  const resetState = useCallback(() => {
-    setMediaStream(null);
-    mediaRef.current = null;
-    setRecordBlob(null);
-    setRecordBlobUrl(null);
-    setMediaState("inactive");
-    resetTimer();
-  }, []);
 
   const cleanupResources = useCallback(() => {
     mediaStream?.getTracks().forEach((track) => track.stop());
@@ -133,7 +141,8 @@ const useRecordMedia = () => {
       setRecordBlobUrl(null);
     }
     setRecordBlob(null);
-  }, [mediaStream, recordBlobUrl]);
+    setIsReady(undefined);
+  }, [mediaStream, recordBlobUrl, resetTimer]);
 
   // TODO: requsetData
 
@@ -150,7 +159,7 @@ const useRecordMedia = () => {
     },
 
     utils: {
-      start: startRecording,
+      start: initializeDevice,
       stop: stopRecording,
       pause: pauseRecording,
       resume: resumeRecording,
