@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import {
@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import useRecordMedia from "@/hooks/useRecordMedia";
 import Link from "next/link";
+import useAudioWaveform from "@/hooks/useAudioWaveform";
 
 const Record = () => {
   const { data, state, utils, timer } = useRecordMedia();
@@ -21,9 +22,21 @@ const Record = () => {
   const isAvailable = state.deviceState;
   const time = timer.time;
 
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+
   const { start, stop, pause, resume, disconnect, cleanup } = utils;
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  const _ = useAudioWaveform({
+    container: container,
+  });
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      setContainer(canvasRef.current);
+    }
+  }, []);
 
   if (isAvailable === false)
     return (
@@ -37,18 +50,19 @@ const Record = () => {
     <div>
       <Link href="/test">Link test</Link>
       <div className="flex flex-col gap-4 items-center">
-        <div className="flex flex-col ">
+        <div className="flex flex-col w-full">
           {mediaState !== "inactive" ? (
             <div className="animate-sparkup">{mediaState}</div>
           ) : recordDataUrl ? (
             <audio src={recordDataUrl} controls></audio>
           ) : null}
-          <canvas
+          <div ref={canvasRef} className="w-full h-[128px]"></div>
+          {/**          <canvas
             ref={canvasRef}
-            width="550"
+            width="870"
             height="128"
             className="rounded-xl bg-gray-100 fill-amber-500"
-          ></canvas>
+          ></canvas> */}
         </div>
         <div className="flex space-x-4 items-center">
           <Input placeholder="enter the url" />

@@ -139,7 +139,6 @@ const useRecordMedia = () => {
     resetTimer();
     if (recordBlobUrl) {
       URL.revokeObjectURL(recordBlobUrl);
-      setRecordBlobUrl(null);
     }
     setRecordBlob(null);
     setIsReady(undefined);

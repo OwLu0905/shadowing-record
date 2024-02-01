@@ -78,7 +78,7 @@ const useWavePlayer = (props: UseWavePlayerProps) => {
   }, [blobData]);
 
   // Duration of the audio in seconds
-  const audioDuration = 10; // You'll need to set this based on your audio's duration
+  const audioDuration = 100; // You'll need to set this based on your audio's duration
 
   // Function to start playback from the selected interval
   function playSelectedInterval(audioBlob: Blob) {
@@ -108,11 +108,6 @@ const useWavePlayer = (props: UseWavePlayerProps) => {
     const x = event.clientX - rect.left; // x position within the canvas
 
     // Convert x position to time
-    const time = (x / canvas.width) * audioDuration;
-
-    if (blobData) {
-      playSelectedInterval(blobData);
-    }
   }
   return <div>useWavePlayer</div>;
 };
