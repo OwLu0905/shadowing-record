@@ -28,9 +28,9 @@ const Record = () => {
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const _ = useAudioWaveform({
-    container: container,
-  });
+  // const _ = useAudioWaveform({
+  //   container: container,
+  // });
 
   useEffect(() => {
     if (canvasRef.current) {

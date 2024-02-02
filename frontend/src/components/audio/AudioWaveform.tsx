@@ -1,15 +1,28 @@
 "use client";
+import useAudioWaveform from "@/hooks/useAudioWaveform";
 import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
 import { throttle } from "@/util/throttle";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const AudioWaveform = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [container, setContainer] = useState<HTMLElement | null>(null);
   const [selectedInterval, setSelectedInterval] = useState({
     left: 0,
     right: 0,
   });
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const _ = useAudioWaveform({
+    container: container,
+  });
+
+  useEffect(() => {
+    if (containerRef.current) {
+      setContainer(containerRef.current);
+    }
+  }, []);
   const onMouseDown = (
     mouseDownEvent: React.MouseEvent<HTMLDivElement, MouseEvent>,
     type: "right" | "left"
@@ -62,8 +75,8 @@ const AudioWaveform = () => {
   };
 
   return (
-    <div className="relative">
-      <canvas ref={canvasRef} className="h-full bg-gray-200"></canvas>
+    <div ref={containerRef} className="relative w-full h-[128px]">
+      <canvas ref={canvasRef} className="w-full h-full bg-gray-200"></canvas>
 
       <div
         className="progress-region bg-green-300/30 absolute top-0 z-5 h-full"
