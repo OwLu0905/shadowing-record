@@ -15,6 +15,7 @@ const AudioWaveform = () => {
     left: 0,
     right: 0,
   });
+  console.log(selectedInterval.left, "left");
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -79,10 +80,23 @@ const AudioWaveform = () => {
     document.addEventListener("mouseup", onMouseUp);
   };
 
-  const handleCanvasClick = async () => {
+  const handleCanvasClick = async (
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+  ) => {
+    if (!canvasRef.current || !audioBuffer) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = event.clientX - rect.left; // Get the x position within the canvas
+    const width = canvasRef.current.width / 2; // The total width of the canvas
+
+    const audioDuration = audioBuffer.duration;
+    const clickPositionRatio = x / width; // Calculate the ratio of the click position to the width of the canvas
+    const startTime = clickPositionRatio * audioDuration; // Calculate the start time in the audio
+    console.log(audioContext!.getOutputTimestamp(), "get output ");
+
     await stopAudio(sourceRef.current)
       .then((message) => {
-        console.log("mess", message);
+        console.log("message:", message);
       })
       .catch((error) => {
         console.error("error", error);
@@ -102,7 +116,14 @@ const AudioWaveform = () => {
         { once: true }
       );
 
-      source.start(0, 10); // Adjust as needed
+      const startTimer = showResize
+        ? (selectedInterval.left / width) * audioDuration
+        : startTime;
+      const endTimer = showResize
+        ? ((width - selectedInterval.left - selectedInterval.right) / width) *
+          audioDuration
+        : audioDuration;
+      source.start(0, startTimer, endTimer);
       sourceRef.current = source;
     }
   };
@@ -157,8 +178,8 @@ const AudioWaveform = () => {
         <canvas
           ref={canvasRef}
           className="w-full h-full bg-gray-200"
-          onClick={async () => {
-            await handleCanvasClick();
+          onClick={async (e) => {
+            await handleCanvasClick(e);
           }}
         ></canvas>
 
