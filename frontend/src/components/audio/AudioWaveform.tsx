@@ -5,22 +5,24 @@ import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
 import { throttle } from "@/util/throttle";
 import { Checkbox } from "../ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
+import { Button } from "../ui/button";
 
 const AudioWaveform = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const progressRef = useRef<HTMLCanvasElement>(null);
+  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const requestIdRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const leftPixelDistanceRef = useRef<any>(null);
+  const pauseProgressRef = useRef<any>(null);
+  const triggerTimeRef = useRef<any>(null);
+
   const [showResize, setShowResize] = useState<CheckedState>(false);
   const [container, setContainer] = useState<HTMLElement | null>(null);
-  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
   const [selectedInterval, setSelectedInterval] = useState({
     left: 0,
     right: 0,
   });
-
-  const requestIdRef = useRef<any>(null);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const { audioBuffer, audioContext } = useAudioWaveform({
     container: container,
   });
@@ -87,14 +89,6 @@ const AudioWaveform = () => {
   ) => {
     if (!canvasRef.current || !audioBuffer) return;
 
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left; // Get the x position within the canvas
-    const width = canvasRef.current.width / 2; // The total width of the canvas
-
-    const audioDuration = audioBuffer.duration;
-    const clickPositionRatio = x / width; // Calculate the ratio of the click position to the width of the canvas
-    const startTime = clickPositionRatio * audioDuration; // Calculate the start time in the audio
-
     await stopAudio(sourceRef.current)
       .then((message) => {
         console.log("message:", message);
@@ -117,8 +111,24 @@ const AudioWaveform = () => {
         { once: true }
       );
 
-      const startPointTime = Date.now(); // Record the start time
+      console.log(progressRef.current, "progresssssssss");
+      if (!progressRef.current) return;
+      progressRef.current.width = canvasRef.current.width;
+      progressRef.current.height = canvasRef.current.height;
+      progressRef.current.style.width = canvasRef.current.style.width;
+      progressRef.current.style.height = canvasRef.current.style.height;
+      progressRef.current.style.width = canvasRef.current.style.width;
+      progressRef.current.style.left = canvasRef.current.style.left;
 
+      const ctx = progressRef.current.getContext("2d")!;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const leftPixelDistance = event.clientX - rect.left;
+      const width = canvasRef.current.width / 2;
+
+      const audioDuration = audioBuffer.duration;
+      const clickPositionRatio = leftPixelDistance / width;
+      const startTime = clickPositionRatio * audioDuration;
+      const triggerTime = Date.now();
       const startTimer = showResize
         ? (selectedInterval.left / width) * audioDuration
         : startTime;
@@ -127,43 +137,81 @@ const AudioWaveform = () => {
           audioDuration
         : audioDuration - startTimer;
 
-      if (!progressRef.current) return;
-
-      progressRef.current.width = canvasRef.current.width;
-      progressRef.current.height = canvasRef.current.height;
-      progressRef.current.style.width = canvasRef.current.style.width;
-      progressRef.current.style.height = canvasRef.current.style.height;
-
-      progressRef.current.style.width = canvasRef.current.style.width;
-      progressRef.current.style.left = canvasRef.current.style.left;
-
-      const ctx = progressRef.current.getContext("2d")!;
-
-      const drawProgress = () => {
-        const currentTime = Date.now();
-        const elapsedTime = currentTime - startPointTime;
-        if (elapsedTime > playDuration * 1000) return;
-
-        const moveDistance =
-          ((startTimer + elapsedTime / 1000) * width * 2) / audioDuration;
-
-        ctx?.clearRect(0, 0, rect.width * 2, rect.height * 2);
-        ctx?.beginPath();
-        ctx.lineWidth = 5;
-        ctx?.moveTo(moveDistance, 0);
-        ctx?.lineTo(moveDistance, rect.height * 2);
-
-        ctx.strokeStyle = "orange";
-        ctx?.stroke();
-
-        requestIdRef.current = requestAnimationFrame(drawProgress);
-      };
-      drawProgress();
+      drawProgress({
+        triggerTime,
+        playDuration,
+        startTimer,
+        audioDuration,
+        width,
+        canvas: progressRef.current,
+        ctx,
+      });
 
       source.start(0, startTimer, playDuration);
       sourceRef.current = source;
     }
   };
+
+  function drawProgress(props: {
+    triggerTime: number;
+    playDuration: number;
+    startTimer: number;
+    audioDuration: number;
+    width: number;
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    pauseTime?: number;
+  }) {
+    if (!canvasRef.current) return;
+
+    const {
+      triggerTime,
+      playDuration,
+      startTimer,
+      audioDuration,
+      width,
+      canvas,
+      ctx,
+    } = props;
+
+    if (pauseProgressRef.current) {
+      triggerTimeRef.current = Date.now();
+      return;
+    }
+
+    const currentTime = Date.now();
+
+    const elapsedTime = currentTime - triggerTime;
+
+    if (elapsedTime / 1000 + startTimer > playDuration * 1000) return;
+
+    const moveDistance =
+      ((startTimer + elapsedTime / 1000) * width * 2) / audioDuration;
+
+    leftPixelDistanceRef.current = startTimer + elapsedTime / 1000;
+
+    const rect = canvasRef.current?.getBoundingClientRect();
+    ctx?.clearRect(0, 0, rect.width * 2, rect.height * 2);
+    ctx?.beginPath();
+    ctx.lineWidth = 5;
+    ctx?.moveTo(moveDistance, 0);
+    ctx?.lineTo(moveDistance, rect.height * 2);
+
+    ctx.strokeStyle = "orange";
+    ctx?.stroke();
+
+    requestIdRef.current = requestAnimationFrame(() =>
+      drawProgress({
+        triggerTime,
+        playDuration,
+        startTimer,
+        audioDuration,
+        width,
+        canvas,
+        ctx,
+      })
+    );
+  }
   function stopAudio(sourceNode: any) {
     return new Promise((resolve, reject) => {
       if (!sourceNode) {
@@ -189,8 +237,7 @@ const AudioWaveform = () => {
     });
   }
 
-  console.log(audioContext?.currentTime, "currentTime");
-
+  console.log(audioContext?.state);
   return (
     <>
       <div className="flex items-center gap-x-2">
@@ -205,39 +252,75 @@ const AudioWaveform = () => {
       </div>
       <button
         onClick={() => {
+          console.log("//////////////\n");
+
+          if (!pauseProgressRef.current) {
+            return;
+          }
+          pauseProgressRef.current = false;
+
+          // setPauseProgress(false);
           audioContext?.resume();
 
+          if (!progressRef.current || !canvasRef.current || !audioBuffer)
+            return;
+
+          const ctx = progressRef.current.getContext("2d")!;
+          const width = canvasRef.current.width / 2;
+          const audioDuration = audioBuffer.duration;
+          const startTime = leftPixelDistanceRef?.current;
+          const triggerTime = Date.now();
+
+          const startTimer = showResize
+            ? (selectedInterval.left / width) * audioDuration
+            : startTime;
+
+          const playDuration = showResize
+            ? ((width - selectedInterval.left - selectedInterval.right) /
+                width) *
+              audioDuration
+            : audioDuration - startTimer;
+
+          drawProgress({
+            triggerTime,
+            playDuration,
+            startTimer,
+            audioDuration,
+            width,
+            canvas: progressRef.current,
+            ctx,
+            pauseTime: triggerTimeRef.current,
+          });
           // sourceRef?.current?.start(0, 3, 10);
         }}
       >
         conee
       </button>
-      <button
+      <Button
+        className="mx-4"
         onClick={() => {
-          audioContext?.suspend();
+          console.log(audioContext.state, "stoppp");
           if (requestIdRef.current && progressRef.current) {
-            // cancelAnimationFrame(requestIdRef.current);
-            //
-            // const progress = progressRef.current?.getContext("2d");
-            // progress?.clearRect(
-            //   0,
-            //   0,
-            //   progressRef.current.width,
-            //   progressRef.current.height
-            // );
+            pauseProgressRef.current = true;
+            cancelAnimationFrame(requestIdRef.current);
+            audioContext?.suspend();
           }
-          if (sourceRef.current) {
-            // sourceRef.current.stop();
-            // sourceRef.current.disconnect();
-            // sourceRef.current = null; // Reset the ref after stopping
-          }
+          // if (sourceRef.current) {
+          //   sourceRef.current.stop();
+          //   sourceRef.current.disconnect();
+          //   sourceRef.current = null; // Reset the ref after stopping
+          // }
         }}
       >
         stop
-      </button>
+      </Button>
       <div
         onClick={async (e) => {
-          console.log("??");
+          console.log(audioContext.state);
+          if (pauseProgressRef.current && audioContext.state === "suspended") {
+            audioContext.resume();
+            pauseProgressRef.current = false;
+          }
           await handleCanvasClick(e);
         }}
         ref={containerRef}

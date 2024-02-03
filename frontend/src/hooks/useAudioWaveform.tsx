@@ -127,8 +127,8 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
   useEffect(() => {
     let ignore = false;
     const getAudio = async () => {
-      // const audioUrl = "/demo.wav";
-      const audioUrl = "/aaa.m4a";
+      const audioUrl = "/demo.wav";
+      // const audioUrl = "/aaa.m4a";
       const data = await fetch(audioUrl, { method: "GET" });
       const arrayBuff = await data.arrayBuffer();
       console.log(arrayBuff, "fewf");
