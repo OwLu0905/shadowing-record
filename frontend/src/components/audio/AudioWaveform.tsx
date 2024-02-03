@@ -8,6 +8,7 @@ import { CheckedState } from "@radix-ui/react-checkbox";
 
 const AudioWaveform = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const progressRef = useRef<HTMLCanvasElement>(null);
   const [showResize, setShowResize] = useState<CheckedState>(false);
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
@@ -15,7 +16,8 @@ const AudioWaveform = () => {
     left: 0,
     right: 0,
   });
-  console.log(selectedInterval.left, "left");
+
+  const requestIdRef = useRef<any>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -81,7 +83,7 @@ const AudioWaveform = () => {
   };
 
   const handleCanvasClick = async (
-    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+    event: React.MouseEvent<HTMLElement, MouseEvent>
   ) => {
     if (!canvasRef.current || !audioBuffer) return;
 
@@ -92,7 +94,6 @@ const AudioWaveform = () => {
     const audioDuration = audioBuffer.duration;
     const clickPositionRatio = x / width; // Calculate the ratio of the click position to the width of the canvas
     const startTime = clickPositionRatio * audioDuration; // Calculate the start time in the audio
-    console.log(audioContext!.getOutputTimestamp(), "get output ");
 
     await stopAudio(sourceRef.current)
       .then((message) => {
@@ -116,14 +117,50 @@ const AudioWaveform = () => {
         { once: true }
       );
 
+      const startPointTime = Date.now(); // Record the start time
+
       const startTimer = showResize
         ? (selectedInterval.left / width) * audioDuration
         : startTime;
-      const endTimer = showResize
+      const playDuration = showResize
         ? ((width - selectedInterval.left - selectedInterval.right) / width) *
           audioDuration
-        : audioDuration;
-      source.start(0, startTimer, endTimer);
+        : audioDuration - startTimer;
+
+      if (!progressRef.current) return;
+
+      progressRef.current.width = canvasRef.current.width;
+      progressRef.current.height = canvasRef.current.height;
+      progressRef.current.style.width = canvasRef.current.style.width;
+      progressRef.current.style.height = canvasRef.current.style.height;
+
+      progressRef.current.style.width = canvasRef.current.style.width;
+      progressRef.current.style.left = canvasRef.current.style.left;
+
+      const ctx = progressRef.current.getContext("2d")!;
+
+      const drawProgress = () => {
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - startPointTime;
+        if (elapsedTime > playDuration * 1000) return;
+
+        const moveDistance =
+          ((startTimer + elapsedTime / 1000) * width * 2) / audioDuration;
+
+        ctx?.clearRect(0, 0, rect.width * 2, rect.height * 2);
+        ctx?.beginPath();
+        ctx.lineWidth = 5;
+        ctx?.moveTo(moveDistance, 0);
+        ctx?.lineTo(moveDistance, rect.height * 2);
+
+        ctx.strokeStyle = "orange";
+        ctx?.stroke();
+
+        requestIdRef.current = requestAnimationFrame(drawProgress);
+      };
+      drawProgress();
+
+      source.start(0, startTimer, playDuration);
       sourceRef.current = source;
     }
   };
@@ -151,6 +188,9 @@ const AudioWaveform = () => {
       }
     });
   }
+
+  console.log(audioContext?.currentTime, "currentTime");
+
   return (
     <>
       <div className="flex items-center gap-x-2">
@@ -165,22 +205,49 @@ const AudioWaveform = () => {
       </div>
       <button
         onClick={() => {
+          audioContext?.resume();
+
+          // sourceRef?.current?.start(0, 3, 10);
+        }}
+      >
+        conee
+      </button>
+      <button
+        onClick={() => {
+          audioContext?.suspend();
+          if (requestIdRef.current && progressRef.current) {
+            // cancelAnimationFrame(requestIdRef.current);
+            //
+            // const progress = progressRef.current?.getContext("2d");
+            // progress?.clearRect(
+            //   0,
+            //   0,
+            //   progressRef.current.width,
+            //   progressRef.current.height
+            // );
+          }
           if (sourceRef.current) {
-            sourceRef.current.stop();
-            sourceRef.current.disconnect();
-            sourceRef.current = null; // Reset the ref after stopping
+            // sourceRef.current.stop();
+            // sourceRef.current.disconnect();
+            // sourceRef.current = null; // Reset the ref after stopping
           }
         }}
       >
         stop
       </button>
-      <div ref={containerRef} className="relative w-full h-[128px]">
+      <div
+        onClick={async (e) => {
+          console.log("??");
+          await handleCanvasClick(e);
+        }}
+        ref={containerRef}
+        className="relative w-full h-[128px]"
+      >
+        <canvas ref={canvasRef} className="w-full h-full bg-gray-200"></canvas>
+
         <canvas
-          ref={canvasRef}
-          className="w-full h-full bg-gray-200"
-          onClick={async (e) => {
-            await handleCanvasClick(e);
-          }}
+          ref={progressRef}
+          className="absolute w-full h-full bg-gray-200/10 top-0"
         ></canvas>
 
         {showResize && (
@@ -194,11 +261,17 @@ const AudioWaveform = () => {
             <div
               aria-label="region-handle-left"
               className="border border-red-700 z-10 h-[120%] top-0 bottom-0 my-auto absolute left-0 bg-red-500 hover:cursor-ew-resize"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
               onMouseDown={(e) => onMouseDown(e, "left")}
             ></div>
             <div
               aria-label="region-handle-right"
               className="border border-sky-700 z-10 h-[120%] top-0 bottom-0 my-auto absolute right-0 bg-pink-500 hover:cursor-ew-resize"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
               onMouseDown={(e) => onMouseDown(e, "right")}
             ></div>
           </div>

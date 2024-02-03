@@ -12,7 +12,7 @@ import AudioWaveform from "@/components/audio/AudioWaveform";
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <Card className="mb-4 w-full">
+      <Card className="mb-4 w-full relative">
         <AudioWaveform />
       </Card>
       <Card className="w-full">

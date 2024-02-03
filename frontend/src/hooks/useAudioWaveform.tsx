@@ -32,6 +32,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
       const start = 0;
       const end = channelData.length * 2;
       const pixelRatio = window.devicePixelRatio || 1;
+
       const canvas =
         canvasContainer.querySelector("canvas") !== null
           ? canvasContainer.querySelector("canvas")!
