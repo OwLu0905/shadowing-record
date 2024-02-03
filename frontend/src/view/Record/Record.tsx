@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import useRecordMedia from "@/hooks/useRecordMedia";
 import Link from "next/link";
-import useAudioWaveform from "@/hooks/useAudioWaveform";
+import AudioWaveform from "@/components/audio/AudioWaveform";
 
 const Record = () => {
   const { data, state, utils, timer } = useRecordMedia();
@@ -63,6 +63,7 @@ const Record = () => {
             height="128"
             className="rounded-xl bg-gray-100 fill-amber-500"
           ></canvas> */}
+          <AudioWaveform blobData={data.blob} />
         </div>
         <div className="flex space-x-4 items-center">
           <Input placeholder="enter the url" />

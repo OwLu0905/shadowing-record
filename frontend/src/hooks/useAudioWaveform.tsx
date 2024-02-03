@@ -1,19 +1,17 @@
+import { blobToArrayBuffer } from "@/lib/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type UseAudioWaveformProps = {
   container: HTMLElement | null;
-  audioBlob?: Blob;
+  audioBlob: Blob | null;
 };
 
 const useAudioWaveform = (props: UseAudioWaveformProps) => {
-  const { container } = props;
+  const { container, audioBlob } = props;
   const audioRef = useRef<AudioContext | null>(null);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | undefined>(
     undefined
   );
-  const [sourceData, setSourceData] = useState<
-    AudioBufferSourceNode | undefined
-  >(undefined);
 
   const [selectedInterval, setSelectedInterval] = useState({
     start: 0,
@@ -127,15 +125,21 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
   useEffect(() => {
     let ignore = false;
     const getAudio = async () => {
+      // if (audioBlob) {
+      //   const arrayBuff = await blobToArrayBuffer(audioBlob);
+      //   audioRef.current = new AudioContext();
+      //   const audioCtxDecode = await audioRef.current.decodeAudioData(
+      //     arrayBuff
+      //   );
+      //   setAudioBuffer(audioCtxDecode);
+      // }
+
       const audioUrl = "/demo.wav";
       // const audioUrl = "/aaa.m4a";
       const data = await fetch(audioUrl, { method: "GET" });
       const arrayBuff = await data.arrayBuffer();
-      console.log(arrayBuff, "fewf");
-
       audioRef.current = new AudioContext();
       const audioCtxDecode = await audioRef.current.decodeAudioData(arrayBuff);
-
       setAudioBuffer(audioCtxDecode);
     };
     if (!ignore) {
@@ -144,7 +148,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [audioBlob]);
 
   useEffect(() => {
     if (container) {
@@ -164,7 +168,6 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
   return {
     audioContext: audioRef.current,
     audioBuffer,
-    sourceData,
     selectedInterval,
     setSelectedInterval,
   };
