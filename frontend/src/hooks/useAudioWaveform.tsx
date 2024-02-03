@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type UseAudioWaveformProps = {
   container: HTMLElement | null;
@@ -7,7 +7,13 @@ type UseAudioWaveformProps = {
 
 const useAudioWaveform = (props: UseAudioWaveformProps) => {
   const { container } = props;
-  const [blobData, setBlobData] = useState<AudioBuffer | undefined>(undefined);
+  const audioRef = useRef<AudioContext | null>(null);
+  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | undefined>(
+    undefined
+  );
+  const [sourceData, setSourceData] = useState<
+    AudioBufferSourceNode | undefined
+  >(undefined);
 
   const [selectedInterval, setSelectedInterval] = useState({
     start: 0,
@@ -53,12 +59,12 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
 
   const drawWaveform = useCallback(async () => {
     if (!container) return;
-    if (!blobData) return;
+    if (!audioBuffer) return;
 
     // NOTE: canvas information
     // NOTE: PCM audio which is float32 or int16
 
-    const channelData = blobData.getChannelData(0);
+    const channelData = audioBuffer.getChannelData(0);
 
     const ctx = drawCanvas(
       channelData,
@@ -111,7 +117,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
     drawChannel(1);
     ctx.fill();
     ctx.closePath();
-  }, [blobData, container, drawCanvas]);
+  }, [audioBuffer, container, drawCanvas]);
 
   //
   // TODO: clip path with progress
@@ -120,13 +126,16 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
   useEffect(() => {
     let ignore = false;
     const getAudio = async () => {
-      const audioUrl = "/demo.wav";
+      // const audioUrl = "/demo.wav";
+      const audioUrl = "/aaa.m4a";
       const data = await fetch(audioUrl, { method: "GET" });
       const arrayBuff = await data.arrayBuffer();
+      console.log(arrayBuff, "fewf");
 
-      const audioCtx = new AudioContext();
-      const audioCtxDecode = await audioCtx.decodeAudioData(arrayBuff);
-      setBlobData(audioCtxDecode);
+      audioRef.current = new AudioContext();
+      const audioCtxDecode = await audioRef.current.decodeAudioData(arrayBuff);
+
+      setAudioBuffer(audioCtxDecode);
     };
     if (!ignore) {
       getAudio();
@@ -143,7 +152,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
     return () => {
       if (container) container.removeEventListener("resize", drawWaveform);
     };
-  }, [blobData, container, drawWaveform]);
+  }, [audioBuffer, container, drawWaveform]);
 
   useEffect(() => {
     if (container) {
@@ -152,6 +161,9 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
   }, [drawWaveform, container]);
 
   return {
+    audioContext: audioRef.current,
+    audioBuffer,
+    sourceData,
     selectedInterval,
     setSelectedInterval,
   };
