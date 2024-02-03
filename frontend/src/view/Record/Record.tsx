@@ -1,7 +1,11 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import useRecordMedia from "@/hooks/useRecordMedia";
 
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import AudioWaveform from "@/components/audio/AudioWaveform";
+
 import {
   DoorClosedIcon,
   Download,
@@ -10,10 +14,6 @@ import {
   StepForward,
   StopCircle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import useRecordMedia from "@/hooks/useRecordMedia";
-import Link from "next/link";
-import AudioWaveform from "@/components/audio/AudioWaveform";
 
 const Record = () => {
   const { data, state, utils, timer } = useRecordMedia();
@@ -22,21 +22,7 @@ const Record = () => {
   const isAvailable = state.deviceState;
   const time = timer.time;
 
-  const [container, setContainer] = useState<HTMLElement | null>(null);
-
-  const { start, stop, pause, resume, disconnect, cleanup } = utils;
-
-  const canvasRef = useRef<HTMLDivElement>(null);
-
-  // const _ = useAudioWaveform({
-  //   container: container,
-  // });
-
-  useEffect(() => {
-    if (canvasRef.current) {
-      setContainer(canvasRef.current);
-    }
-  }, []);
+  const { start, stop, pause, resume, disconnect } = utils;
 
   if (isAvailable === false)
     return (
@@ -56,13 +42,6 @@ const Record = () => {
           ) : recordDataUrl ? (
             <audio src={recordDataUrl} controls></audio>
           ) : null}
-          <div ref={canvasRef} className="w-full h-[128px]"></div>
-          {/**          <canvas
-            ref={canvasRef}
-            width="870"
-            height="128"
-            className="rounded-xl bg-gray-100 fill-amber-500"
-          ></canvas> */}
           <AudioWaveform blobData={data.blob} />
         </div>
         <div className="flex space-x-4 items-center">

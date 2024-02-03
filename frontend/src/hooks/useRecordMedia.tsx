@@ -3,6 +3,7 @@ import { usePathname } from "next/navigation";
 import useElapsedTime from "./useElapsedTime";
 
 import toast from "react-hot-toast";
+
 import { MEDIA_CONSTRAINT } from "@/lib/constants";
 
 const useRecordMedia = () => {

@@ -1,25 +1,27 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import useAudioWaveform from "@/hooks/useAudioWaveform";
-import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
-import { throttle } from "@/util/throttle";
-import { Checkbox } from "../ui/checkbox";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { Button } from "../ui/button";
+
+import { throttle } from "@/util/throttle";
+import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
 
 type AudioWaveformProps = {
   blobData: Blob | null;
 };
+
 const AudioWaveform = (props: AudioWaveformProps) => {
   const { blobData } = props;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const progressRef = useRef<HTMLCanvasElement>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const requestIdRef = useRef<any>(null);
+  const requestIdRef = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const leftPixelDistanceRef = useRef<any>(null);
-  const pauseProgressRef = useRef<any>(null);
-  // const triggerTimeRef = useRef<any>(null);
+  const leftPixelDistanceRef = useRef<number | null>(null);
+  const pauseProgressRef = useRef<boolean | null>(null);
 
   const [showResize, setShowResize] = useState<CheckedState>(false);
   const [container, setContainer] = useState<HTMLElement | null>(null);
@@ -161,12 +163,13 @@ const AudioWaveform = (props: AudioWaveformProps) => {
   function drawProgress(props: {
     triggerTime: number; // ms
     playDuration: number; // sec
-    startTimer: number; // sec
+    startTimer: number | null; // sec
     audioDuration: number; // sec
     width: number;
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
   }) {
+    console.log("check render");
     const {
       triggerTime,
       playDuration,
@@ -177,11 +180,8 @@ const AudioWaveform = (props: AudioWaveformProps) => {
       ctx,
     } = props;
 
-    // console.log(triggerTime, playDuration, startTimer, audioDuration, "aaa");
-
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || startTimer === null) return;
     if (pauseProgressRef.current) {
-      // triggerTimeRef.current = Date.now();
       return;
     }
 
@@ -189,16 +189,17 @@ const AudioWaveform = (props: AudioWaveformProps) => {
 
     const elapsedTime = currentTime - triggerTime; // ms
 
-    console.log("111aaa", elapsedTime / 1000, startTimer, playDuration);
+    // console.log("111aaa", elapsedTime / 1000, startTimer, playDuration);
 
     if (elapsedTime / 1000 > playDuration) return;
 
-    const moveDistance =
-      ((startTimer + elapsedTime / 1000) * width * 2) / audioDuration;
+    const playedTime = startTimer + elapsedTime / 1000;
+    const moveDistance = (playedTime * width * 2) / audioDuration;
 
-    leftPixelDistanceRef.current = startTimer + elapsedTime / 1000; // sec
+    leftPixelDistanceRef.current = playedTime; // sec
 
-    const rect = canvasRef.current?.getBoundingClientRect();
+    const rect = canvasRef.current.getBoundingClientRect();
+
     ctx?.clearRect(0, 0, rect.width * 2, rect.height * 2);
     ctx?.beginPath();
     ctx.lineWidth = 5;
@@ -261,31 +262,41 @@ const AudioWaveform = (props: AudioWaveformProps) => {
 
         <div className="flex items-center">
           <Button
-            onClick={() => {
+            onClick={async () => {
               if (!pauseProgressRef.current) {
                 return;
               }
-              pauseProgressRef.current = false;
-              audioContext?.resume();
 
-              if (!progressRef.current || !canvasRef.current || !audioBuffer)
+              if (
+                !audioContext ||
+                !progressRef.current ||
+                !canvasRef.current ||
+                !audioBuffer ||
+                leftPixelDistanceRef.current === null
+              )
                 return;
 
               const ctx = progressRef.current.getContext("2d")!;
               const width = canvasRef.current.width / 2;
               const audioDuration = audioBuffer.duration; // sec
-              const startTime = leftPixelDistanceRef?.current; // sec
+              const startTime = leftPixelDistanceRef.current; // sec
+
               const triggerTime = Date.now(); // ms
 
-              const startTimer = showResize
-                ? (selectedInterval.left / width) * audioDuration // sec
-                : startTime; // sec
+              const startTimer = startTime;
+              // const startTimer = showResize
+              //   ? (selectedInterval.left / width) * audioDuration // sec
+              //   : startTime; // sec
 
               const playDuration = showResize
                 ? ((width - selectedInterval.left - selectedInterval.right) /
                     width) *
-                  audioDuration // sec
+                    audioDuration -
+                  startTimer // sec
                 : audioDuration - startTimer; // sec
+
+              await audioContext.resume();
+              pauseProgressRef.current = false;
 
               drawProgress({
                 triggerTime,
@@ -295,26 +306,19 @@ const AudioWaveform = (props: AudioWaveformProps) => {
                 width,
                 canvas: progressRef.current,
                 ctx,
-                // pauseTime: triggerTimeRef.current,
               });
-              // sourceRef?.current?.start(0, 3, 10);
             }}
           >
-            conee
+            Resume
           </Button>
           <Button
             className="mx-4"
-            onClick={() => {
-              if (requestIdRef.current && progressRef.current) {
+            onClick={async () => {
+              if (audioContext && requestIdRef.current && progressRef.current) {
+                await audioContext.suspend();
                 pauseProgressRef.current = true;
                 cancelAnimationFrame(requestIdRef.current);
-                audioContext?.suspend();
               }
-              // if (sourceRef.current) {
-              //   sourceRef.current.stop();
-              //   sourceRef.current.disconnect();
-              //   sourceRef.current = null; // Reset the ref after stopping
-              // }
             }}
           >
             stop
@@ -324,8 +328,15 @@ const AudioWaveform = (props: AudioWaveformProps) => {
 
       <div
         onClick={async (e) => {
-          if (pauseProgressRef.current && audioContext.state === "suspended") {
-            audioContext.resume();
+          if (requestIdRef.current !== null) {
+            cancelAnimationFrame(requestIdRef.current);
+          }
+          if (
+            audioContext &&
+            pauseProgressRef.current &&
+            audioContext.state === "suspended"
+          ) {
+            await audioContext.resume();
             pauseProgressRef.current = false;
           }
           await handleCanvasClick(e);

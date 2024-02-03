@@ -104,6 +104,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
       }
       ctx.lineTo(prevX, halfHeight);
     }
+
     ctx.clearRect(
       0,
       0,
@@ -114,6 +115,8 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
     ctx.beginPath();
     drawChannel(0);
     drawChannel(1);
+
+    ctx.fillStyle = "rgb(181, 0, 127)";
     ctx.fill();
     ctx.closePath();
   }, [audioBuffer, container, drawCanvas]);
