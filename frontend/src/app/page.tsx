@@ -7,14 +7,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Record from "@/view/Record/Record";
-import AudioWaveform from "@/components/audio/AudioWaveform";
 
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <Card className="mb-4 w-full relative">
-        <AudioWaveform />
-      </Card>
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Card Title</CardTitle>

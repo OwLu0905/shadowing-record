@@ -16,7 +16,9 @@ type AudioWaveformProps = {
 const AudioWaveform = (props: AudioWaveformProps) => {
   const { blobData } = props;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const clipRegionRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLCanvasElement>(null);
+
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
   const requestIdRef = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -25,6 +27,7 @@ const AudioWaveform = (props: AudioWaveformProps) => {
 
   const [showResize, setShowResize] = useState<CheckedState>(false);
   const [container, setContainer] = useState<HTMLElement | null>(null);
+
   const [selectedInterval, setSelectedInterval] = useState({
     left: 0,
     right: 0,
@@ -32,6 +35,7 @@ const AudioWaveform = (props: AudioWaveformProps) => {
   const { audioBuffer, audioContext } = useAudioWaveform({
     container: container,
     audioBlob: blobData,
+    clipRegionContainer: clipRegionRef.current,
   });
 
   useEffect(() => {
@@ -134,7 +138,8 @@ const AudioWaveform = (props: AudioWaveformProps) => {
       const audioDuration = audioBuffer.duration;
       const clickPositionRatio = leftPixelDistance / width;
       const startTime = clickPositionRatio * audioDuration;
-      const triggerTime = Date.now();
+
+      const triggerTime = performance.now();
 
       const startTimer = showResize
         ? (selectedInterval.left / width) * audioDuration
@@ -185,11 +190,10 @@ const AudioWaveform = (props: AudioWaveformProps) => {
       return;
     }
 
-    const currentTime = Date.now(); // ms
+    // const currentTime = Date.now(); // ms
+    const currentTime = performance.now();
 
     const elapsedTime = currentTime - triggerTime; // ms
-
-    // console.log("111aaa", elapsedTime / 1000, startTimer, playDuration);
 
     if (elapsedTime / 1000 > playDuration) return;
 
@@ -208,6 +212,16 @@ const AudioWaveform = (props: AudioWaveformProps) => {
 
     ctx.strokeStyle = "orange";
     ctx?.stroke();
+
+    // clip-path: polygon(0% 0%, 0% 100%, 20% 100%, 20% 0%);
+    clipRegionRef.current!.style["clipPath"] = `polygon(0% 0%, 0% 100%, ${
+      (moveDistance / width / 2) * 100
+    }% 100%, ${(moveDistance / width / 2) * 100}% 0%)`;
+
+    // clipRegionRef.current!.style["clipPath"] = `polygon(${
+    //   (moveDistance / width / 2) * 100
+    // }% 0%, ${(moveDistance / width / 2) * 100}% 100%, 100% 100%, 100% 0%)`;
+    containerRef.current!.style["zIndex"] = "0";
 
     requestIdRef.current = requestAnimationFrame(() =>
       drawProgress({
@@ -276,37 +290,68 @@ const AudioWaveform = (props: AudioWaveformProps) => {
               )
                 return;
 
-              const ctx = progressRef.current.getContext("2d")!;
-              const width = canvasRef.current.width / 2;
-              const audioDuration = audioBuffer.duration; // sec
-              const startTime = leftPixelDistanceRef.current; // sec
+              await stopAudio(sourceRef.current)
+                .then((message) => {
+                  console.log("message:", message);
+                })
+                .catch((error) => {
+                  console.error("error", error);
+                });
 
-              const triggerTime = Date.now(); // ms
+              if (audioContext && audioBuffer) {
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(audioContext.destination);
 
-              const startTimer = startTime;
-              // const startTimer = showResize
-              //   ? (selectedInterval.left / width) * audioDuration // sec
-              //   : startTime; // sec
+                source.addEventListener(
+                  "ended",
+                  () => {
+                    console.log("Playback finished.");
+                  },
+                  { once: true }
+                );
 
-              const playDuration = showResize
-                ? ((width - selectedInterval.left - selectedInterval.right) /
-                    width) *
-                    audioDuration -
-                  startTimer // sec
-                : audioDuration - startTimer; // sec
+                if (!progressRef.current) return;
+                progressRef.current.width = canvasRef.current.width;
+                progressRef.current.height = canvasRef.current.height;
+                progressRef.current.style.width = canvasRef.current.style.width;
+                progressRef.current.style.height =
+                  canvasRef.current.style.height;
+                progressRef.current.style.width = canvasRef.current.style.width;
+                progressRef.current.style.left = canvasRef.current.style.left;
 
-              await audioContext.resume();
-              pauseProgressRef.current = false;
+                const ctx = progressRef.current.getContext("2d")!;
+                const width = canvasRef.current.width / 2;
+                const audioDuration = audioBuffer.duration; // sec
+                const startTime = leftPixelDistanceRef.current; // sec
 
-              drawProgress({
-                triggerTime,
-                playDuration,
-                startTimer,
-                audioDuration,
-                width,
-                canvas: progressRef.current,
-                ctx,
-              });
+                const triggerTime = performance.now(); // ms
+
+                const startTimer = startTime;
+
+                const playDuration = showResize
+                  ? ((width - selectedInterval.left - selectedInterval.right) /
+                      width) *
+                      audioDuration -
+                    startTimer // sec
+                  : audioDuration - startTimer; // sec
+
+                // await audioContext.resume();
+                pauseProgressRef.current = false;
+
+                drawProgress({
+                  triggerTime,
+                  playDuration,
+                  startTimer,
+                  audioDuration,
+                  width,
+                  canvas: progressRef.current,
+                  ctx,
+                });
+
+                source.start(0, startTimer, playDuration);
+                sourceRef.current = source;
+              }
             }}
           >
             Resume
@@ -314,8 +359,20 @@ const AudioWaveform = (props: AudioWaveformProps) => {
           <Button
             className="mx-4"
             onClick={async () => {
-              if (audioContext && requestIdRef.current && progressRef.current) {
-                await audioContext.suspend();
+              if (
+                sourceRef.current &&
+                requestIdRef.current &&
+                progressRef.current
+              ) {
+                // await audioContext.suspend();
+                await stopAudio(sourceRef.current)
+                  .then((message) => {
+                    console.log("message:", message);
+                  })
+                  .catch((error) => {
+                    console.error("error", error);
+                  });
+
                 pauseProgressRef.current = true;
                 cancelAnimationFrame(requestIdRef.current);
               }
@@ -323,60 +380,99 @@ const AudioWaveform = (props: AudioWaveformProps) => {
           >
             stop
           </Button>
+          <Button
+            variant={"destructive"}
+            onClick={async () => {
+              await stopAudio(sourceRef.current);
+
+              if (requestIdRef.current) {
+                cancelAnimationFrame(requestIdRef.current);
+              }
+
+              pauseProgressRef.current = false;
+
+              if (progressRef.current && canvasRef.current) {
+                const progressCtx = progressRef.current.getContext("2d");
+                progressCtx?.clearRect(
+                  0,
+                  0,
+                  canvasRef.current.width,
+                  canvasRef.current.height
+                );
+              }
+
+              if (clipRegionRef.current) {
+                clipRegionRef.current.style["clipPath"] = "none";
+              }
+            }}
+          >
+            reset
+          </Button>
         </div>
       </div>
 
       <div
+        className="relative"
+        id="wrapper"
         onClick={async (e) => {
           if (requestIdRef.current !== null) {
             cancelAnimationFrame(requestIdRef.current);
           }
-          if (
-            audioContext &&
-            pauseProgressRef.current &&
-            audioContext.state === "suspended"
-          ) {
+          if (audioContext && pauseProgressRef.current) {
             await audioContext.resume();
             pauseProgressRef.current = false;
           }
           await handleCanvasClick(e);
         }}
-        ref={containerRef}
-        className="relative w-full h-[128px]"
       >
-        <canvas ref={canvasRef} className="w-full h-full bg-gray-200"></canvas>
+        <div ref={containerRef} className="relative w-full h-[128px]">
+          <canvas
+            ref={canvasRef}
+            className="w-full h-full bg-zinc-100/60"
+          ></canvas>
+        </div>
 
-        <canvas
-          ref={progressRef}
-          className="absolute w-full h-full bg-gray-200/10 top-0"
-        ></canvas>
+        <div
+          aria-label="progress-resize-region"
+          className="absolute top-0 w-full h-[128px]"
+        >
+          <canvas
+            ref={progressRef}
+            className="absolute w-full h-full bg-zinc-100/60 top-0"
+          ></canvas>
+          {showResize && (
+            <div
+              className="progress-region bg-lime-300/40  absolute top-0 shadow-sm z h-full"
+              style={{
+                left: selectedInterval.left,
+                right: selectedInterval.right,
+              }}
+            >
+              <div
+                aria-label="region-handle-left"
+                className="border border-red-700 z-10 h-[120%] top-0 bottom-0 my-auto absolute left-0 bg-red-500 hover:cursor-ew-resize"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                onMouseDown={(e) => onMouseDown(e, "left")}
+              ></div>
+              <div
+                aria-label="region-handle-right"
+                className="border border-sky-700 z-10 h-[120%] top-0 bottom-0 my-auto absolute right-0 bg-pink-500 hover:cursor-ew-resize"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                onMouseDown={(e) => onMouseDown(e, "right")}
+              ></div>
+            </div>
+          )}
+        </div>
 
-        {showResize && (
-          <div
-            className="progress-region bg-green-300/30 absolute top-0 z-5 h-full"
-            style={{
-              left: selectedInterval.left,
-              right: selectedInterval.right,
-            }}
-          >
-            <div
-              aria-label="region-handle-left"
-              className="border border-red-700 z-10 h-[120%] top-0 bottom-0 my-auto absolute left-0 bg-red-500 hover:cursor-ew-resize"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              onMouseDown={(e) => onMouseDown(e, "left")}
-            ></div>
-            <div
-              aria-label="region-handle-right"
-              className="border border-sky-700 z-10 h-[120%] top-0 bottom-0 my-auto absolute right-0 bg-pink-500 hover:cursor-ew-resize"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              onMouseDown={(e) => onMouseDown(e, "right")}
-            ></div>
-          </div>
-        )}
+        <div
+          aria-label="clip-region"
+          ref={clipRegionRef}
+          className="absolute top-0 w-full h-[128px]"
+        ></div>
       </div>
     </>
   );
