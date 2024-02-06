@@ -42,7 +42,9 @@ const Record = () => {
           ) : recordDataUrl ? (
             <audio src={recordDataUrl} controls></audio>
           ) : null}
-          <AudioWaveform blobData={data.blob} />
+          {mediaState === "inactive" && data.blob ? (
+            <AudioWaveform blobData={data.blob} />
+          ) : null}
         </div>
         <div className="flex space-x-4 items-center">
           <Input placeholder="enter the url" />

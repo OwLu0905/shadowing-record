@@ -18,6 +18,7 @@ const AudioWaveform = (props: AudioWaveformProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const clipRegionRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLCanvasElement>(null);
+  const clipRef = useRef<HTMLCanvasElement>(null);
 
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
   const requestIdRef = useRef<number | null>(null);
@@ -25,6 +26,15 @@ const AudioWaveform = (props: AudioWaveformProps) => {
   const leftPixelDistanceRef = useRef<number | null>(null);
   const pauseProgressRef = useRef<boolean | null>(null);
 
+  const [clipStyle, setClipStyle] = useState("none");
+  const [canvasStyle, setCanvasStyle] = useState<
+    | {
+        width: string;
+        height: string;
+        left: string;
+      }
+    | undefined
+  >(undefined);
   const [showResize, setShowResize] = useState<CheckedState>(false);
   const [container, setContainer] = useState<HTMLElement | null>(null);
 
@@ -32,17 +42,63 @@ const AudioWaveform = (props: AudioWaveformProps) => {
     left: 0,
     right: 0,
   });
+
   const { audioBuffer, audioContext } = useAudioWaveform({
     container: container,
+
+    canvas: canvasRef.current,
+    clipCanvas: clipRef.current,
+
     audioBlob: blobData,
-    clipRegionContainer: clipRegionRef.current,
+
+    setCanvasStyle: setCanvasStyle,
   });
 
   useEffect(() => {
-    if (containerRef.current) {
+    if (blobData && containerRef.current) {
       setContainer(containerRef.current);
+      setCanvasStyle(undefined);
+    } else {
+      setContainer(null);
+      setCanvasStyle(undefined);
     }
-  }, []);
+  }, [blobData]);
+
+  useEffect(() => {
+    if (!clipRef.current || !canvasRef.current || !progressRef.current) return;
+
+    const ctx = canvasRef.current.getContext("2d");
+
+    const progressCanvas = progressRef.current;
+    const progressCtx = progressCanvas?.getContext("2d");
+
+    const clipCtx = clipRef.current.getContext("2d");
+
+    const source = sourceRef.current;
+
+    return () => {
+      if (source) {
+        stopAudio(source);
+      }
+      if (
+        ctx &&
+        canvasRef.current &&
+        clipRef.current &&
+        clipCtx &&
+        progressCtx
+      ) {
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
+        clipCtx.clearRect(0, 0, clipRef.current.width, clipRef.current.height);
+        progressCtx.clearRect(
+          0,
+          0,
+          progressCanvas?.width,
+          progressCanvas.height
+        );
+      }
+    };
+  }, [blobData]);
 
   const onMouseDown = (
     mouseDownEvent: React.MouseEvent<HTMLDivElement, MouseEvent>,
@@ -100,13 +156,15 @@ const AudioWaveform = (props: AudioWaveformProps) => {
   ) => {
     if (!canvasRef.current || !audioBuffer) return;
 
-    await stopAudio(sourceRef.current)
-      .then((message) => {
-        console.log("message:", message);
-      })
-      .catch((error) => {
-        console.error("error", error);
-      });
+    if (sourceRef.current) {
+      await stopAudio(sourceRef.current)
+        .then((message) => {
+          console.log("message:", message);
+        })
+        .catch((error) => {
+          console.error("error", error);
+        });
+    }
 
     if (audioContext && audioBuffer) {
       const source = audioContext.createBufferSource();
@@ -125,15 +183,12 @@ const AudioWaveform = (props: AudioWaveformProps) => {
       if (!progressRef.current) return;
       progressRef.current.width = canvasRef.current.width;
       progressRef.current.height = canvasRef.current.height;
-      progressRef.current.style.width = canvasRef.current.style.width;
-      progressRef.current.style.height = canvasRef.current.style.height;
-      progressRef.current.style.width = canvasRef.current.style.width;
-      progressRef.current.style.left = canvasRef.current.style.left;
 
       const ctx = progressRef.current.getContext("2d")!;
       const rect = canvasRef.current.getBoundingClientRect();
       const leftPixelDistance = event.clientX - rect.left;
       const width = canvasRef.current.width / 2;
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
       const audioDuration = audioBuffer.duration;
       const clickPositionRatio = leftPixelDistance / width;
@@ -190,12 +245,9 @@ const AudioWaveform = (props: AudioWaveformProps) => {
       return;
     }
 
-    // const currentTime = Date.now(); // ms
     const currentTime = performance.now();
 
     const elapsedTime = currentTime - triggerTime; // ms
-
-    if (elapsedTime / 1000 > playDuration) return;
 
     const playedTime = startTimer + elapsedTime / 1000;
     const moveDistance = (playedTime * width * 2) / audioDuration;
@@ -203,6 +255,29 @@ const AudioWaveform = (props: AudioWaveformProps) => {
     leftPixelDistanceRef.current = playedTime; // sec
 
     const rect = canvasRef.current.getBoundingClientRect();
+
+    if (elapsedTime > playDuration * 1000) {
+      ctx?.clearRect(0, 0, rect.width * 2, rect.height * 2);
+      ctx?.beginPath();
+      ctx.lineWidth = 5;
+      ctx?.moveTo(
+        !showResize
+          ? width * 2
+          : ((startTimer + playDuration) * width * 2) / audioDuration,
+        0
+      );
+      ctx?.lineTo(
+        !showResize
+          ? width * 2
+          : ((startTimer + playDuration) * width * 2) / audioDuration,
+        rect.height * 2
+      );
+
+      ctx.strokeStyle = "orange";
+      ctx?.stroke();
+      setClipStyle(`polygon(0% 0%, 0% 100%, 100% 100%, 100% 0%)`);
+      return;
+    }
 
     ctx?.clearRect(0, 0, rect.width * 2, rect.height * 2);
     ctx?.beginPath();
@@ -214,14 +289,17 @@ const AudioWaveform = (props: AudioWaveformProps) => {
     ctx?.stroke();
 
     // clip-path: polygon(0% 0%, 0% 100%, 20% 100%, 20% 0%);
-    clipRegionRef.current!.style["clipPath"] = `polygon(0% 0%, 0% 100%, ${
-      (moveDistance / width / 2) * 100
-    }% 100%, ${(moveDistance / width / 2) * 100}% 0%)`;
-
-    // clipRegionRef.current!.style["clipPath"] = `polygon(${
+    // clipRegionRef.current!.style["clipPath"] = `polygon(0% 0%, 0% 100%, ${
     //   (moveDistance / width / 2) * 100
-    // }% 0%, ${(moveDistance / width / 2) * 100}% 100%, 100% 100%, 100% 0%)`;
-    containerRef.current!.style["zIndex"] = "0";
+    // }% 100%, ${(moveDistance / width / 2) * 100}% 0%)`;
+
+    setClipStyle(
+      `polygon(0% 0%, 0% 100%, ${
+        ((startTimer * 1000 + elapsedTime) / (audioDuration * 1000)) * 100
+      }% 100%, ${
+        ((startTimer * 1000 + elapsedTime) / (audioDuration * 1000)) * 100
+      }% 0%)`
+    );
 
     requestIdRef.current = requestAnimationFrame(() =>
       drawProgress({
@@ -336,7 +414,6 @@ const AudioWaveform = (props: AudioWaveformProps) => {
                     startTimer // sec
                   : audioDuration - startTimer; // sec
 
-                // await audioContext.resume();
                 pauseProgressRef.current = false;
 
                 drawProgress({
@@ -419,7 +496,6 @@ const AudioWaveform = (props: AudioWaveformProps) => {
             cancelAnimationFrame(requestIdRef.current);
           }
           if (audioContext && pauseProgressRef.current) {
-            await audioContext.resume();
             pauseProgressRef.current = false;
           }
           await handleCanvasClick(e);
@@ -428,6 +504,7 @@ const AudioWaveform = (props: AudioWaveformProps) => {
         <div ref={containerRef} className="relative w-full h-[128px]">
           <canvas
             ref={canvasRef}
+            style={canvasStyle ? { ...canvasStyle } : {}}
             className="w-full h-full bg-zinc-100/60"
           ></canvas>
         </div>
@@ -439,6 +516,7 @@ const AudioWaveform = (props: AudioWaveformProps) => {
           <canvas
             ref={progressRef}
             className="absolute w-full h-full bg-zinc-100/60 top-0"
+            style={canvasStyle ? { ...canvasStyle } : {}}
           ></canvas>
           {showResize && (
             <div
@@ -471,8 +549,15 @@ const AudioWaveform = (props: AudioWaveformProps) => {
         <div
           aria-label="clip-region"
           ref={clipRegionRef}
+          style={{ clipPath: clipStyle }}
           className="absolute top-0 w-full h-[128px]"
-        ></div>
+        >
+          <canvas
+            ref={clipRef}
+            style={canvasStyle ? { ...canvasStyle } : {}}
+            className="w-full h-full bg-zinc-100/60"
+          ></canvas>
+        </div>
       </div>
     </>
   );
