@@ -7,11 +7,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Record from "@/view/Record/Record";
+import Component from "@/view/Record/Tmp";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <Card className="w-full">
+    <main className="flex w-full min-h-screen flex-col mx-auto">
+      <Component />
+      {/**       <Card className="w-full">
         <CardHeader>
           <CardTitle>Card Title</CardTitle>
           <CardDescription>Card Description</CardDescription>
@@ -21,6 +23,7 @@ export default function Home() {
         </CardContent>
         <CardFooter></CardFooter>
       </Card>
+      */}
     </main>
   );
 }

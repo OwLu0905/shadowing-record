@@ -4,7 +4,7 @@ import useElapsedTime from "./useElapsedTime";
 
 import toast from "react-hot-toast";
 
-import { MEDIA_CONSTRAINT } from "@/lib/constants";
+import { DEFAULT_BITS_PER_SECOND, MEDIA_CONSTRAINT } from "@/lib/constants";
 
 const useRecordMedia = () => {
   const mediaRef = useRef<MediaRecorder | null>(null);
@@ -48,7 +48,7 @@ const useRecordMedia = () => {
     if (!mediaRef.current || !isReady) return;
 
     const handleDataAvailable = (event: BlobEvent) => {
-      if (event.data.size > 0) {
+      if (event.data.size >= 0) {
         setRecordBlob(event.data);
         const url = URL.createObjectURL(event.data);
 
@@ -59,10 +59,11 @@ const useRecordMedia = () => {
     mediaRef.current.addEventListener("dataavailable", handleDataAvailable);
 
     return () => {
+      console.log("accd");
       if (mediaRef.current) {
         mediaRef.current.removeEventListener(
           "dataavailable",
-          handleDataAvailable
+          handleDataAvailable,
         );
       }
 
@@ -87,17 +88,18 @@ const useRecordMedia = () => {
 
   const initializeDevice = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia(
-        MEDIA_CONSTRAINT
-      );
+      const stream =
+        await navigator.mediaDevices.getUserMedia(MEDIA_CONSTRAINT);
       setIsReady(true);
       setMediaStream(stream);
 
-      // NOTE: initial data state
+      // // NOTE: initial data state
       setRecordBlob(null);
       setRecordBlobUrl(null);
 
-      const recorder = new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream, {
+        audioBitsPerSecond: DEFAULT_BITS_PER_SECOND,
+      });
       mediaRef.current = recorder;
     } catch (err) {
       console.error("Error accessing media devices:", err);

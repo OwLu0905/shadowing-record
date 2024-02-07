@@ -24,7 +24,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
   const { container, audioBlob, canvas, clipCanvas, setCanvasStyle } = props;
   const audioRef = useRef<AudioContext | null>(null);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | undefined>(
-    undefined
+    undefined,
   );
 
   // NOTE: ref : https://github.com/katspaugh/wavesurfer.js/blob/main/src/renderer.ts
@@ -34,7 +34,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
       channelData: Float32Array,
       width: number,
       height: number,
-      canvasContainer: HTMLElement
+      canvasContainer: HTMLElement,
     ) => {
       if (!canvasContainer || !canvas) return;
 
@@ -56,14 +56,14 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
       canvas.style.width = `${Math.floor(canvas.width / pixelRatio)}px`;
       canvas.style.height = `${height}px`;
       canvas.style.left = `${Math.floor(
-        (start * width) / pixelRatio / length
+        (start * width) / pixelRatio / length,
       )}px`;
 
       const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
       return ctx;
     },
-    []
+    [],
   );
 
   const drawWaveform = useCallback(
@@ -90,7 +90,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
         channelData,
         container.getBoundingClientRect().width,
         container.getBoundingClientRect().height,
-        container
+        container,
       ) as CanvasRenderingContext2D;
 
       // NOTE: ref: wavesuerfer.js
@@ -101,7 +101,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
         const halfHeight = height / 2;
         const maxV = Array.from(channel).reduce(
           (max, value) => Math.max(max, Math.abs(value)),
-          0
+          0,
         );
         const hScale = ctx.canvas.width / length;
         const vScale = maxV ? 1 / maxV : 1;
@@ -130,14 +130,14 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
         0,
         0,
         container.getBoundingClientRect().width,
-        container.getBoundingClientRect().height
+        container.getBoundingClientRect().height,
       );
 
       ctx.beginPath();
       drawChannel(0);
       drawChannel(1);
 
-      ctx.fillStyle = "rgb(181,0,127,0.8)";
+      ctx.fillStyle = "darkred";
       ctx.fill();
       ctx.closePath();
 
@@ -152,11 +152,11 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
 
         clipCtx.drawImage(canvas, 0, 0);
         clipCtx.globalCompositeOperation = "source-in";
-        clipCtx.fillStyle = "rgb(181,0,127,1)";
+        clipCtx.fillStyle = "brown";
         clipCtx.fillRect(0, 0, canvas.width, canvas.height);
       }
     },
-    [audioBuffer, container, drawCanvas]
+    [audioBuffer, container, drawCanvas],
   );
 
   //
@@ -169,9 +169,8 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
       if (audioBlob) {
         audioRef.current = new AudioContext();
         const arrayBuff = await audioBlob.arrayBuffer();
-        const audioCtxDecode = await audioRef.current.decodeAudioData(
-          arrayBuff
-        );
+        const audioCtxDecode =
+          await audioRef.current.decodeAudioData(arrayBuff);
         setAudioBuffer(audioCtxDecode);
       }
     }
@@ -192,7 +191,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
           container,
           audioBuffer,
           clipCanvas,
-        })
+        }),
       );
     }
     return () => {
@@ -204,7 +203,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
             audioBuffer,
             container,
             clipCanvas,
-          })
+          }),
         );
     };
   }, [audioBuffer, canvas, clipCanvas, container, drawWaveform]);
