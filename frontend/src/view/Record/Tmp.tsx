@@ -110,16 +110,6 @@ export default function Component() {
               <h2 className="font-semibold text-lg md:text-2xl">Waveform</h2>
             </CardHeader>
             <CardContent>
-              {/**<div className="h-20 w-full bg-gray-200 mb-4" />
-              <div className="flex gap-2">
-                <Button className="w-8 h-8 rounded-full">
-                  <PlayIcon className="h-6 w-6" />
-                </Button>
-                <Button className="w-8 h-8 rounded-full">
-                  <MonitorStopIcon className="h-6 w-6" />
-                </Button>
-              </div>
-              */}
               <Record />
             </CardContent>
           </Card>

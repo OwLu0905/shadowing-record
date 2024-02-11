@@ -137,7 +137,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
       drawChannel(0);
       drawChannel(1);
 
-      ctx.fillStyle = "darkred";
+      ctx.fillStyle = "purple";
       ctx.fill();
       ctx.closePath();
 
@@ -152,7 +152,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
 
         clipCtx.drawImage(canvas, 0, 0);
         clipCtx.globalCompositeOperation = "source-in";
-        clipCtx.fillStyle = "brown";
+        clipCtx.fillStyle = "indigo";
         clipCtx.fillRect(0, 0, canvas.width, canvas.height);
       }
     },

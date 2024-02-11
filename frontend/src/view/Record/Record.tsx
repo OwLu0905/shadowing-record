@@ -262,17 +262,6 @@ const Record = () => {
         <div className="flex justify-between items-center">
           <div className="flex gap-2">
             <div className="flex items-center gap-x-2">
-              <div className="flex items-center my-4 gap-2">
-                <Checkbox
-                  id="resize"
-                  checked={showResize}
-                  onCheckedChange={(e) => {
-                    setShowResize(e);
-                  }}
-                />
-                <label htmlFor="resize">Resize Region</label>
-              </div>
-
               <div className="flex items-center">
                 <Button
                   onClick={async () => {
@@ -348,11 +337,12 @@ const Record = () => {
                       sourceRef.current = source;
                     }
                   }}
+                  variant={"ghost"}
+                  className="rounded-full h-10 w-10 p-0 text-cyan-600 hover:text-cyan-600/80"
                 >
-                  R
+                  <StepForward className="rounded-full p-0.5" />
                 </Button>
                 <Button
-                  className="mx-4"
                   onClick={async () => {
                     if (
                       sourceRef.current &&
@@ -372,11 +362,14 @@ const Record = () => {
                       cancelAnimationFrame(requestIdRef.current);
                     }
                   }}
+                  variant={"ghost"}
+                  className="rounded-full h-10 w-10 p-0"
+                  aria-label="pause audio"
                 >
-                  S
+                  <Pause className="rounded-full p-0.5 text-amber-600 hover:text-amber-600/80" />
                 </Button>
                 <Button
-                  variant={"destructive"}
+                  variant={"ghost"}
                   onClick={async () => {
                     await stopAudio(sourceRef.current);
 
@@ -400,9 +393,28 @@ const Record = () => {
                       clipRegionRef.current.style["clipPath"] = "none";
                     }
                   }}
+                  className="rounded-full h-10 w-10 p-0 text-rose-600 hover:text-rose-600/80"
+                  aria-label="stop audio"
                 >
-                  C
+                  <StopCircle className="rounded-full p-0.5" />
                 </Button>
+              </div>
+
+              <div className="flex items-center my-4 gap-2">
+                <Checkbox
+                  id="resize"
+                  checked={showResize}
+                  onCheckedChange={(e) => {
+                    setShowResize(e);
+                  }}
+                  className="data-[state=checked]:bg-lime-500 border-lime-500"
+                />
+                <label
+                  htmlFor="resize"
+                  className="text-sm text-lime-600 font-medium"
+                >
+                  Show Region
+                </label>
               </div>
             </div>
           </div>
@@ -422,7 +434,7 @@ const Record = () => {
             {mediaState === "paused" ? (
               <Button
                 type="button"
-                variant={"secondary"}
+                variant="ghost"
                 onClick={resume}
                 className="rounded-full h-10 w-10 p-0"
               >
@@ -433,7 +445,7 @@ const Record = () => {
             {mediaState === "recording" ? (
               <Button
                 type="button"
-                variant="destructive"
+                variant="ghost"
                 onClick={pause}
                 className="rounded-full h-10 w-10 p-0"
               >
@@ -444,6 +456,7 @@ const Record = () => {
             {mediaState === "recording" || mediaState === "paused" ? (
               <Button
                 type="button"
+                variant="ghost"
                 onClick={stop}
                 className="rounded-full h-10 w-10 p-0"
               >

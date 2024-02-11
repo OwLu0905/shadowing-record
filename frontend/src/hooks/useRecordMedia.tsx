@@ -59,7 +59,6 @@ const useRecordMedia = () => {
     mediaRef.current.addEventListener("dataavailable", handleDataAvailable);
 
     return () => {
-      console.log("accd");
       if (mediaRef.current) {
         mediaRef.current.removeEventListener(
           "dataavailable",
@@ -101,6 +100,7 @@ const useRecordMedia = () => {
         audioBitsPerSecond: DEFAULT_BITS_PER_SECOND,
       });
       mediaRef.current = recorder;
+      recorder.stop();
     } catch (err) {
       console.error("Error accessing media devices:", err);
       setIsReady(false);
