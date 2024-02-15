@@ -1,21 +1,26 @@
-use dotenv::dotenv;
-use sqlx::postgres::PgPoolOptions;
-use sqlx::Row;
-use std::env;
+use axum::Router;
+use backend::{db, routes::audio::audio_route};
+use dotenv;
 use std::error::Error;
+use std::net::SocketAddr;
+
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    dotenv().ok();
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "example_tokio_postgres=debug".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    dotenv::dotenv().ok();
 
-    let pool = PgPoolOptions::new()
-        .max_connections(5)
-        .connect(&database_url)
-        .await;
+    let connec = db::connection::establish_connection().await;
 
-    let pool = match pool {
+    let pool = match connec {
         Ok(success) => {
             println!("✅  Connection to the database is successful!");
             success
@@ -26,13 +31,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
-    let res = sqlx::query("SELECT username from accounts")
-        .fetch_one(&pool)
-        .await?;
+    let app = Router::new().merge(audio_route()).with_state(pool);
 
-    let user: String = res.get("username");
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3001));
 
-    println!("The first user is: {}", user);
+    let listener = tokio::net::TcpListener::bind(addr.to_string())
+        .await
+        .unwrap();
+
+    tracing::debug!("listening on {}", listener.local_addr().unwrap());
+
+    axum::serve(listener, app).await.unwrap();
 
     Ok(())
 }
