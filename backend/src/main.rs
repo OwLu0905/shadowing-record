@@ -1,13 +1,17 @@
-use axum::Router;
-use backend::{db, routes::audio::audio_route};
+use axum::http::{header, Method, Request, Response};
+use axum::{
+    http::{StatusCode, Uri},
+    routing::get,
+    Router,
+};
+use backend::{db, handlers::audio::upload_audio, routes::audio::audio_route};
 use dotenv;
-use std::error::Error;
 use std::net::SocketAddr;
-
+use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> anyhow::Result<()> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -31,7 +35,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
-    let app = Router::new().merge(audio_route()).with_state(pool);
+    let cors = CorsLayer::new()
+        // allow `GET` and `POST` when accessing the resource
+        .allow_methods([Method::GET, Method::POST])
+        // allow requests from any origin
+        .allow_origin(Any)
+        .allow_headers(Any);
+
+    let app = Router::new()
+        .fallback(fallback)
+        .merge(audio_route())
+        .layer(cors)
+        .with_state(pool);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3001));
 
@@ -44,4 +59,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     axum::serve(listener, app).await.unwrap();
 
     Ok(())
+}
+
+async fn fallback(uri: Uri) -> (StatusCode, String) {
+    (StatusCode::NOT_FOUND, format!("No route for {uri}"))
 }

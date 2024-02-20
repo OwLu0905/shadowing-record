@@ -220,6 +220,26 @@ const Record = () => {
     });
   }
 
+  async function saveAudioToFile() {
+    if (!data.blob) return;
+    const formData = new FormData();
+    formData.append("file", data.blob);
+    try {
+      const response = await fetch("http://localhost:3001/audio", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert("Audio uploaded successfully");
+      } else {
+        alert("Error uploading audio");
+      }
+    } catch (error) {
+      console.error("Error uploading audio:", error);
+    }
+  }
+
   if (isAvailable === false)
     return (
       <div>
@@ -465,6 +485,13 @@ const Record = () => {
             ) : null}
           </div>
         </div>
+        <Button
+          onClick={async () => {
+            await saveAudioToFile();
+          }}
+        >
+          Save
+        </Button>
       </div>
     </>
   );
