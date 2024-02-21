@@ -1,92 +1,104 @@
-import Link from "next/link";
+"use client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuItem,
-  DropdownMenuContent,
-  DropdownMenu,
-} from "@/components/ui/dropdown-menu";
 import { CardHeader, CardContent, Card } from "@/components/ui/card";
 import Record from "./Record";
 import History from "./History";
 import HistoryMobile from "./HistoryMobile";
+import { useEffect, useRef, useState } from "react";
+import ReactPlayer from "react-player";
+import { SliderWithLabel } from "@/components/custom/ui/slider";
+import { format } from "date-fns/format";
+
+const outurl = "https://www.youtube.com/embed/6O3B8XwvKuc";
 
 export default function RecordPage() {
+  const playerRef = useRef<ReactPlayer>(null);
+  const [sliderValue, setSliderValue] = useState<[start: number, end: number]>([
+    0, 0,
+  ]);
+  const [playing, setPlaying] = useState(false);
+  // const [prepared, setPrepared] = useState(false);
+
+  const [hasWindow, setHasWindow] = useState(false);
+
+  const handleProgress = () => {
+    if (playerRef.current) {
+      const currentTime = playerRef.current.getCurrentTime();
+
+      if (currentTime >= sliderValue[1]) {
+        // playerRef.current.seekTo(startTime); // Loop back to start
+        setPlaying(false);
+      }
+    }
+  };
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setHasWindow(true);
+    }
+  }, []);
+
   return (
     <div className="flex flex-col h-screen">
-      {/**  
-      <header className="flex h-14 py-8 items-center gap-4 border-b bg-gray-100/40 px-6 dark:bg-gray-800/40">
-        <Link className="lg:hidden" href="#">
-          3<span className="sr-only">Home</span>
-                </Link>
-        <div className="w-full flex-1">
-          <form>
-            <div className="relative">
-              3333
-              <Input
-                className="w-full bg-white shadow-none appearance-none pl-8 md:w-2/3 lg:w-1/3 dark:bg-gray-950"
-                placeholder="Search recordings..."
-                type="search"
-              />
-            </div>
-          </form>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              className="rounded-full border border-gray-200 w-8 h-8 dark:border-gray-800"
-              size="icon"
-              variant="ghost"
-            >
-              <img
-                alt="Avatar"
-                className="rounded-full"
-                height="32"
-                src="/placeholder.svg"
-                style={{
-                  aspectRatio: "32/32",
-                  objectFit: "cover",
-                }}
-                width="32"
-              />
-              <span className="sr-only">Toggle user menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </header>
-*/}
+      <main className="flex flex-1 flex-col lg:flex-row gap-4 p-4 md:gap-8 md:py-6 md:px-40 ">
+        <div className="w-full lg:w-1/2 flex flex-col items-center justify-center bg-gray-200">
+          {hasWindow && (
+            <ReactPlayer
+              ref={playerRef}
+              url={outurl}
+              width="100%"
+              height="100%"
+              onPlay={() => {
+                setPlaying(true);
+              }}
+              playing={playing}
+              onProgress={handleProgress}
+              onReady={(e) => {
+                setSliderValue([0, e.getDuration()]);
+                // setPrepared(true);
+              }}
+              controls={true}
+            />
+          )}
 
-      <main className="flex flex-1 flex-col md:flex-row gap-4 p-4 md:gap-8 md:py-6 md:px-40 ">
-        <div className="w-1/3 flex flex-col items-center justify-center bg-gray-200">
-          <img
-            alt="Placeholder for video"
-            className="w-full h-1/3 object-cover"
-            height="200"
-            src="/placeholder.svg"
-            style={{
-              aspectRatio: "500/500",
-              objectFit: "cover",
+          <Button
+            className="my-4"
+            onClick={() => {
+              setPlaying((prev) => !prev);
             }}
-            width="200"
-          />
-          <div className="flex gap-4 mt-4">
-            <Button>1</Button>
-            <Button>2</Button>
-            <Button>3</Button>
+          >
+            {playing ? "paused" : "play"}
+          </Button>
+          <div className="p-8 bg-white w-full">
+            {hasWindow && playerRef.current && (
+              <SliderWithLabel
+                defaultValue={[0, playerRef.current.getDuration()]}
+                onValueChange={
+                  setSliderValue as React.Dispatch<
+                    React.SetStateAction<number[]>
+                  >
+                }
+                step={1}
+                max={playerRef.current?.getDuration() ?? 100}
+                subLabel={[
+                  format(sliderValue[0] * 1000, "mm:ss"),
+                  format(sliderValue[1] * 1000, "mm:ss"),
+                ]}
+              />
+            )}
           </div>
+
+          <Button
+            onClick={() => {
+              playerRef.current?.seekTo(sliderValue[0]);
+              setPlaying(true);
+            }}
+          >
+            apply
+          </Button>
         </div>
-        <div className="w-2/3 flex flex-col gap-4">
+
+        <div className="w-full lg:w-1/2 flex flex-col gap-4">
           <div className="flex items-center">
             <h1 className="font-semibold text-lg md:text-2xl">Recordings</h1>
             <Button className="ml-auto" size="sm">

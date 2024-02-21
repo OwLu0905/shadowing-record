@@ -26,8 +26,6 @@ pub async fn upload_audio(
             _ => "webm",
         };
 
-        dbg!("Field name", field.file_name());
-
         let filename = field
             .file_name()
             .map(|name| format!("{}.{}", name.to_string(), extension))
