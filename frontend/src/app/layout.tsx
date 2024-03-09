@@ -3,10 +3,11 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
+import Header from "@/components/layout/header/header";
+import Footer from "@/components/layout/footer/footer";
+
+import { ThemeProvider } from "@/components/layout/theme/theme-provider";
 import { Toaster } from "react-hot-toast";
-import Header from "@/layout/Header";
-import { ThemeProvider } from "@/components/layout/theme.provider";
-import Footer from "@/layout/footer";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 

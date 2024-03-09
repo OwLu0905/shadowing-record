@@ -1,10 +1,9 @@
 import React from "react";
 import Link from "next/link";
 
-import { Input } from "@/components/ui/input";
-import ToggleTheme from "./toggle-theme";
-import AuthHeader from "./AuthHeader";
-import GuestHeader from "./GuestHeader";
+import ToggleTheme from "@/components/layout/theme/toggle-theme";
+import AuthHeader from "@/components/layout/header/auth-header";
+import GuestHeader from "@/components/layout/header/guest-header";
 
 const Header = () => {
   return (

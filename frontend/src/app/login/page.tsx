@@ -1,7 +1,6 @@
 import LoginForm from "@/components/auth/login-form";
-import React from "react";
 
-const LoginPage = () => {
+const LoginPage = async () => {
   return (
     <section className="flex justify-center mx-auto container py-20">
       <LoginForm />
