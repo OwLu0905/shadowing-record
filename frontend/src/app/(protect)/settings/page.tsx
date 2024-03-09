@@ -3,8 +3,8 @@ import React from "react";
 
 const SettingPage = async () => {
   const a = await auth();
-  console.log(a);
-  return <div>SettingPage</div>;
+
+  return <div>{JSON.stringify(a)}</div>;
 };
 
 export default SettingPage;
