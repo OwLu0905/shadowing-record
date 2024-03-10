@@ -182,6 +182,10 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
     };
   }, [audioBlob]);
 
+  //
+  // TODO:  get toggle sidebar event to re-render canvas
+  //
+
   useEffect(() => {
     if (container) {
       window.addEventListener(
