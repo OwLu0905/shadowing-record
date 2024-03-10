@@ -1,9 +1,9 @@
 import "next-auth/jwt";
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { db } from "@/lib/db";
+
 import authConfig from "@/lib/auth.config";
+import { db } from "@/lib/db";
 import { getUserById } from "@/data/user";
 
 export const {
@@ -40,7 +40,6 @@ export const {
       return session;
     },
     async jwt({ token }) {
-      console.log(token, "fjiowefjiowe");
       if (!token.sub) return token;
 
       const existingUser = await getUserById(token.sub);

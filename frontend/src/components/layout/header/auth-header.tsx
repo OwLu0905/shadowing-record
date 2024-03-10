@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,8 +9,16 @@ import {
   DropdownMenuContent,
   DropdownMenu,
 } from "@/components/ui/dropdown-menu";
+import { signOut, useSession } from "next-auth/react";
 
 const AuthHeader = () => {
+  function handleSingout() {
+    signOut({
+      redirect: true,
+      callbackUrl: "/",
+    });
+  }
+
   return (
     <div>
       <DropdownMenu>
@@ -29,7 +38,7 @@ const AuthHeader = () => {
           <DropdownMenuItem>Settings</DropdownMenuItem>
           <DropdownMenuItem>Support</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Logout</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleSingout}>Logout</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

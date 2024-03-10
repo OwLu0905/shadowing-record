@@ -2,7 +2,7 @@ import { EnvParseConfig } from "@/util/env.schema";
 import type { Config } from "drizzle-kit";
 
 export default {
-  schema: "./src/db/schema.ts",
+  schema: "./src/data/schema/",
   out: "./src/drizzle",
   driver: "pg",
   dbCredentials: {

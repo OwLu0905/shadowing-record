@@ -22,6 +22,20 @@
       "when": 1709998630902,
       "tag": "0002_aspiring_virginia_dare",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1710053156024,
+      "tag": "0003_sudden_baron_strucker",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1710053437170,
+      "tag": "0004_productive_frank_castle",
+      "breakpoints": true
     }
   ]
 }
