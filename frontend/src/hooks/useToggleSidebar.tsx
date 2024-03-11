@@ -1,6 +1,4 @@
-"use client";
 import { useSyncExternalStore } from "react";
-import { z, ZodTransformer } from "zod";
 
 const useToggleSidebar = (name: string): [boolean, (data: boolean) => void] => {
   const isOpen = useSyncExternalStore(
@@ -31,14 +29,6 @@ function getSnapshot(name: string) {
   const validationToggleData = isOpenString === "false" ? "false" : "true";
 
   return validationToggleData;
-
-  // const stringSchema = z.string();
-  // const validString = stringSchema.safeParse(isOpenString);
-  // if (!validString.success) return JSON.stringify(true) as string;
-  //
-  // const booleanSchema = z.boolean();
-  // const validIsOpen = booleanSchema.safeParse(JSON.parse(validString.data));
-  // if (!validIsOpen.success) return JSON.stringify(true) as string;
 }
 
 function getServerSnapshot() {

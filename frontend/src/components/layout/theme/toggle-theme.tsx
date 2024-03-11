@@ -14,6 +14,17 @@ import {
 const ToggleTheme = () => {
   const { setTheme } = useTheme();
 
+  function toggleThemeWithTransition(theme: string) {
+    // @ts-ignore
+    if (!document.startViewTransition) {
+      setTheme("light");
+      return;
+    }
+
+    // @ts-ignore
+    document.startViewTransition(() => setTheme(theme));
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -24,13 +35,13 @@ const ToggleTheme = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
+        <DropdownMenuItem onClick={() => toggleThemeWithTransition("light")}>
           Light
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
+        <DropdownMenuItem onClick={() => toggleThemeWithTransition("dark")}>
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
+        <DropdownMenuItem onClick={() => toggleThemeWithTransition("system")}>
           System
         </DropdownMenuItem>
       </DropdownMenuContent>

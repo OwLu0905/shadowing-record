@@ -17,7 +17,7 @@ const SideNav = () => {
 
   return (
     <div
-      className="hidden flex-[0_0_auto] flex-col bg-gradient-to-b from-secondary via-secondary/60 to-secondary  transition-all duration-300 ease-in-out data-[expand=false]:w-[60px] data-[expand=true]:w-72 md:flex"
+      className="hidden flex-[0_0_auto] flex-col bg-gradient-to-b from-secondary via-secondary/60 to-secondary  transition-all duration-300 ease-in-out data-[expand=false]:w-[60px] data-[expand=true]:w-60 md:flex"
       data-expand={open}
     >
       <Button
