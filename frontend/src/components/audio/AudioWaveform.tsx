@@ -28,8 +28,6 @@ type AudioWaveformProps = {
     }>
   >;
 
-  leftPixelDistanceRef: React.MutableRefObject<number | null>;
-
   canvasStyle:
     | {
         width: string;
@@ -44,7 +42,7 @@ type AudioWaveformProps = {
 
   clipRef: React.RefObject<HTMLCanvasElement>;
   clipStyle: string;
-  setClipStyle: React.Dispatch<React.SetStateAction<string>>;
+
   drawProgress: (data: {
     triggerTime: number;
     playDuration: number;
@@ -68,14 +66,12 @@ const AudioWaveform = (props: AudioWaveformProps) => {
     progressRef,
     showResize,
     selectedInterval,
-    leftPixelDistanceRef,
     canvasStyle,
     setSelectedInterval,
     containerRef,
     clipRegionRef,
     clipRef,
     clipStyle,
-    setClipStyle,
     drawProgress,
   } = props;
 
@@ -109,14 +105,16 @@ const AudioWaveform = (props: AudioWaveformProps) => {
       );
 
       if (!progressRef.current) return;
-      progressRef.current.width = canvasRef.current.width;
-      progressRef.current.height = canvasRef.current.height;
+      const width = canvasRef.current.width;
+      const height = canvasRef.current.height;
+      progressRef.current.width = width;
+      progressRef.current.height = height;
 
       const ctx = progressRef.current.getContext("2d")!;
       const rect = canvasRef.current.getBoundingClientRect();
       const leftPixelDistance = event.clientX - rect.left;
-      const width = canvasRef.current.width ;
-      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
+      ctx.clearRect(0, 0, width, height);
 
       const audioDuration = audioBuffer.duration;
       const clickPositionRatio = leftPixelDistance / width;
@@ -213,26 +211,39 @@ const AudioWaveform = (props: AudioWaveformProps) => {
           await handleCanvasClick(e);
         }}
       >
-        <div ref={containerRef} className="relative w-full h-[128px]">
+        <div ref={containerRef} className="relative h-[128px] w-full">
           <canvas
             ref={canvasRef}
             style={canvasStyle ? { ...canvasStyle } : {}}
-            className="w-full h-full bg-zinc-100/60"
+            className="h-full w-full bg-secondary/60"
+          ></canvas>
+        </div>
+
+        <div
+          aria-label="clip-region"
+          ref={clipRegionRef}
+          style={{ clipPath: clipStyle }}
+          className="absolute top-0 h-[128px] w-full"
+        >
+          <canvas
+            ref={clipRef}
+            style={canvasStyle ? { ...canvasStyle } : {}}
+            className="h-full w-full bg-zinc-100/60"
           ></canvas>
         </div>
 
         <div
           aria-label="progress-resize-region"
-          className="absolute top-0 w-full h-[128px]"
+          className="absolute top-0 h-[128px] w-full"
         >
           <canvas
             ref={progressRef}
-            className="absolute w-full h-full bg-transparent top-0"
+            className="absolute top-0 h-full w-full"
             style={canvasStyle ? { ...canvasStyle } : {}}
           ></canvas>
           {showResize && (
             <div
-              className="progress-region bg-lime-300/40  absolute top-0 shadow-sm z h-full"
+              className="progress-region z  absolute top-0 h-full bg-lime-300/40 shadow-sm"
               style={{
                 left: selectedInterval.left,
                 right: selectedInterval.right,
@@ -240,7 +251,7 @@ const AudioWaveform = (props: AudioWaveformProps) => {
             >
               <div
                 aria-label="region-handle-left"
-                className="border border-red-700 z-10 h-[120%] top-0 bottom-0 my-auto absolute left-0 bg-red-500 hover:cursor-ew-resize"
+                className="absolute bottom-0 left-0 top-0 z-10 my-auto h-[120%] border border-red-700 bg-red-500 hover:cursor-ew-resize"
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
@@ -248,7 +259,7 @@ const AudioWaveform = (props: AudioWaveformProps) => {
               ></div>
               <div
                 aria-label="region-handle-right"
-                className="border border-sky-700 z-10 h-[120%] top-0 bottom-0 my-auto absolute right-0 bg-pink-500 hover:cursor-ew-resize"
+                className="absolute bottom-0 right-0 top-0 z-10 my-auto h-[120%] border border-sky-700 bg-pink-500 hover:cursor-ew-resize"
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
@@ -256,19 +267,6 @@ const AudioWaveform = (props: AudioWaveformProps) => {
               ></div>
             </div>
           )}
-        </div>
-
-        <div
-          aria-label="clip-region"
-          ref={clipRegionRef}
-          style={{ clipPath: clipStyle }}
-          className="absolute top-0 w-full h-[128px]"
-        >
-          <canvas
-            ref={clipRef}
-            style={canvasStyle ? { ...canvasStyle } : {}}
-            className="w-full h-full bg-zinc-100/60"
-          ></canvas>
         </div>
       </div>
     </>

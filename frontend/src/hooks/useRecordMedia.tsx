@@ -151,7 +151,7 @@ const useRecordMedia = () => {
 
   const returnState = {
     data: {
-      srteam: mediaStream,
+      strem: mediaStream,
       blob: recordBlob,
       url: recordBlobUrl,
     },

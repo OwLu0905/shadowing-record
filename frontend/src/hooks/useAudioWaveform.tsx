@@ -1,27 +1,15 @@
+import { CheckedState } from "@radix-ui/react-checkbox";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type UseAudioWaveformProps = {
-  container: HTMLElement | null;
-
+  containerState: HTMLElement | null;
   canvas: HTMLCanvasElement | null;
   clipCanvas: HTMLCanvasElement | null;
-
   audioBlob: Blob | null;
-
-  setCanvasStyle: React.Dispatch<
-    React.SetStateAction<
-      | {
-          width: string;
-          height: string;
-          left: string;
-        }
-      | undefined
-    >
-  >;
 };
 
 const useAudioWaveform = (props: UseAudioWaveformProps) => {
-  const { container, audioBlob, canvas, clipCanvas, setCanvasStyle } = props;
+  const { containerState, audioBlob, canvas, clipCanvas } = props;
   const audioRef = useRef<AudioContext | null>(null);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | undefined>(
     undefined,
@@ -30,34 +18,27 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
   // NOTE: ref : https://github.com/katspaugh/wavesurfer.js/blob/main/src/renderer.ts
   const drawCanvas = useCallback(
     (
-      canvas: HTMLCanvasElement | null,
+      canvas: HTMLCanvasElement,
       channelData: Float32Array,
       width: number,
       height: number,
-      canvasContainer: HTMLElement,
     ) => {
-      if (!canvasContainer || !canvas) return;
-
       const start = 0;
-      const end = channelData.length ;
+      const end = channelData.length;
       const pixelRatio = window.devicePixelRatio || 1;
 
       const length = channelData.length;
 
-      canvas.width = Math.round((width * (end - start)) / length);
+      canvas.width = Math.round((width * pixelRatio * (end - start)) / length);
       canvas.height = height * pixelRatio;
 
-      setCanvasStyle({
-        width: `${Math.floor(canvas.width / pixelRatio)}px`,
-        height: `${height}px`,
-        left: `${Math.floor((start * width) / pixelRatio / length)}px`,
-      });
+      const calculateWidth = `${Math.floor(canvas.width / pixelRatio)}px`;
+      const calculateHeight = `${height}px`;
+      const calculateLeft = `${Math.floor((start * width) / pixelRatio / length)}px`;
 
-      canvas.style.width = `${Math.floor(canvas.width / pixelRatio)}px`;
-      canvas.style.height = `${height}px`;
-      canvas.style.left = `${Math.floor(
-        (start * width) / pixelRatio / length,
-      )}px`;
+      canvas.style.width = calculateWidth;
+      canvas.style.height = calculateHeight;
+      canvas.style.left = calculateLeft;
 
       const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
@@ -71,26 +52,20 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
       canvas,
       clipCanvas,
       audioBuffer,
-      container,
+      containerState,
     }: {
-      canvas: HTMLCanvasElement | null;
-      clipCanvas: HTMLCanvasElement | null;
-      container: HTMLElement | null;
-      audioBuffer: AudioBuffer | undefined;
+      canvas: HTMLCanvasElement;
+      clipCanvas: HTMLCanvasElement;
+      containerState: HTMLElement;
+      audioBuffer: AudioBuffer;
     }) => {
-      if (!canvas) return;
-      if (!container) return;
-      if (!audioBuffer) return;
-      if (!clipCanvas) return;
-
       const channelData = audioBuffer.getChannelData(0);
 
       const ctx = drawCanvas(
         canvas,
         channelData,
-        container.getBoundingClientRect().width,
-        container.getBoundingClientRect().height,
-        container,
+        containerState.getBoundingClientRect().width,
+        containerState.getBoundingClientRect().height,
       ) as CanvasRenderingContext2D;
 
       // NOTE: ref: wavesuerfer.js
@@ -126,18 +101,13 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
         ctx.lineTo(prevX, halfHeight);
       }
 
-      ctx.clearRect(
-        0,
-        0,
-        container.getBoundingClientRect().width,
-        container.getBoundingClientRect().height,
-      );
+      ctx.clearRect(0, 0, canvas.width, canvas.height * 2);
 
       ctx.beginPath();
       drawChannel(0);
       drawChannel(1);
 
-      ctx.fillStyle = "purple";
+      ctx.fillStyle = "indigo";
       ctx.fill();
       ctx.closePath();
 
@@ -146,23 +116,127 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
         clipCanvas.width = canvas.width;
         clipCanvas.height = canvas.height;
 
+        clipCanvas.style.width = canvas.style.width;
+        clipCanvas.style.height = canvas.style.height;
+        clipCanvas.style.left = canvas.style.left;
+
         const clipCtx = clipCanvas.getContext("2d")!;
 
-        clipCtx.clearRect(0, 0, canvas.width, canvas.height);
+        clipCtx.clearRect(0, 0, canvas.width, canvas.height * 2);
 
         clipCtx.drawImage(canvas, 0, 0);
         clipCtx.globalCompositeOperation = "source-in";
-        clipCtx.fillStyle = "indigo";
+        clipCtx.fillStyle = "purple";
         clipCtx.fillRect(0, 0, canvas.width, canvas.height);
       }
     },
-    [audioBuffer, container, drawCanvas],
+    [drawCanvas],
   );
 
-  //
-  // TODO: clip path with progress
-  //
+  function drawProgress({
+    showResize,
+    triggerTime,
+    playDuration,
+    startTimer,
+    audioDuration,
+    width,
+    canvas,
+    ctx,
+    clipRegionRef,
+    pauseProgressRef,
+    leftPixelDistanceRef,
+    requestIdRef,
+  }: {
+    showResize: CheckedState;
+    triggerTime: number; // ms
+    playDuration: number; // sec
+    startTimer: number | null; // sec
+    audioDuration: number; // sec
+    width: number;
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    clipRegionRef: any;
+    pauseProgressRef: any;
+    leftPixelDistanceRef: any;
+    requestIdRef: any;
+  }) {
+    if (startTimer === null) return;
+    if (pauseProgressRef.current) return;
+    console.log("check render progress");
 
+    const currentTime = performance.now();
+    const elapsedTime = currentTime - triggerTime; // ms
+
+    const playedTime = startTimer + elapsedTime / 1000;
+    const moveDistance = (playedTime * width) / audioDuration;
+
+    leftPixelDistanceRef.current = playedTime; // sec
+
+    if (elapsedTime > playDuration * 1000) {
+      ctx?.clearRect(0, 0, canvas.width, canvas.height * 2);
+      ctx?.beginPath();
+      ctx.lineWidth = 5;
+      ctx?.moveTo(
+        !showResize
+          ? width
+          : ((startTimer + playDuration) * width) / audioDuration,
+        0,
+      );
+      ctx?.lineTo(
+        !showResize
+          ? width
+          : ((startTimer + playDuration) * width) / audioDuration,
+        canvas.height * 2,
+      );
+
+      ctx.strokeStyle = "orange";
+      ctx?.stroke();
+
+      if (clipRegionRef) {
+        // clipRegionRef.style.clipPath = `polygon(0% 0%, 0% 100%, 100% 100%, 100% 0%)`;
+        // clipRegionRef.style.clipPath =
+        //   "polygon(100% 0px, 100% 0px, 100% 100%, 100% 100%)";
+      }
+
+      return;
+    }
+
+    ctx?.clearRect(0, 0, canvas.width, canvas.height * 2);
+    ctx?.beginPath();
+    ctx.lineWidth = 5;
+    ctx?.moveTo(moveDistance, 0);
+    ctx?.lineTo(moveDistance, canvas.height * 2);
+
+    ctx.strokeStyle = "orange";
+    ctx?.stroke();
+
+    if (clipRegionRef) {
+      clipRegionRef.style.clipPath = `polygon(0% 0%, 0% 100%, ${
+        ((startTimer * 1000 + elapsedTime) / (audioDuration * 1000)) * 100
+      }% 100%, ${
+        ((startTimer * 1000 + elapsedTime) / (audioDuration * 1000)) * 100
+      }% 0%)`;
+    }
+
+    requestIdRef.current = requestAnimationFrame(() =>
+      drawProgress({
+        showResize,
+        triggerTime,
+        playDuration,
+        startTimer,
+        audioDuration,
+        width,
+        canvas,
+        ctx,
+        clipRegionRef,
+        pauseProgressRef,
+        leftPixelDistanceRef,
+        requestIdRef,
+      }),
+    );
+  }
+
+  // NOTE: data processing
   useEffect(() => {
     let ignore = false;
     async function getAudio() {
@@ -186,46 +260,49 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
   // TODO:  get toggle sidebar event to re-render canvas
   //
 
+  // NOTE: resize
   useEffect(() => {
-    if (container) {
+    if (canvas && clipCanvas && containerState && audioBuffer) {
       window.addEventListener(
         "resize",
         drawWaveform.bind(null, {
           canvas,
-          container,
+          containerState,
           audioBuffer,
           clipCanvas,
         }),
       );
     }
     return () => {
-      if (container)
-        container.removeEventListener(
+      if (canvas && clipCanvas && containerState && audioBuffer)
+        containerState.removeEventListener(
           "resize",
           drawWaveform.bind(null, {
             canvas,
             audioBuffer,
-            container,
+            containerState,
             clipCanvas,
           }),
         );
     };
-  }, [audioBuffer, canvas, clipCanvas, container, drawWaveform]);
+  }, [audioBuffer, canvas, clipCanvas, containerState, drawWaveform]);
 
+  // NOTE: draw
   useEffect(() => {
-    if (canvas && clipCanvas && container && audioBuffer) {
+    if (canvas && clipCanvas && containerState && audioBuffer) {
       drawWaveform({
         canvas,
-        container,
+        containerState,
         audioBuffer,
         clipCanvas,
       });
     }
-  }, [drawWaveform, audioBuffer, container, canvas, clipCanvas]);
+  }, [drawWaveform, audioBuffer, containerState, canvas, clipCanvas]);
 
   return {
     audioContext: audioRef.current,
     audioBuffer,
+    drawProgress,
   };
 };
 export default useAudioWaveform;
