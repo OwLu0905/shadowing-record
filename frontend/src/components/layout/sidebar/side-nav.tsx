@@ -2,12 +2,17 @@
 import { Button } from "@/components/ui/button";
 import useToggleSidebar from "@/hooks/useToggleSidebar";
 import { MenuIcon, Plus } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { v4 as uuid } from "uuid";
 
 const SideNav = () => {
   // NOTE: use useSyncExternalStore to store in localstorage
   const [open, setOpen] = useToggleSidebar("SidebarToggle");
   const [isMount, setMount] = useState(false);
+
+  const router = useRouter();
 
   useEffect(() => {
     setMount(true);
@@ -31,7 +36,7 @@ const SideNav = () => {
 
       <Button
         variant={"default"}
-        onClick={() => setOpen(!open)}
+        onClick={() => router.push("/records")}
         size="sm"
         className="mx-3 mb-4 w-fit px-2"
       >
@@ -42,25 +47,28 @@ const SideNav = () => {
         data-expand={open}
       >
         <li className="w-full truncate">
-          <Button variant={"link"}>
-            <p className="">
-              sit amet consectetur adipisicing elit. Voluptate nobis esse fuga
+          <Button variant={"link"} asChild>
+            <Link href={`/records/${uuid()}`}>
               dolore doloribus ducimus minus laudantium impedit quam omnis a
               eius dicta, nesciunt repudiandae necessitatibus quos autem illum
               nam?
-            </p>
+            </Link>
           </Button>
         </li>
 
-        <li>
-          <Button variant={"link"} className="w-full">
-            Lorem ipsum dolor sit.
+        <li className="w-full truncate">
+          <Button variant={"link"} asChild>
+            <Link href={`/records/${uuid()}`}>
+              eius dicta, nesciunt repudiandae necessitatibus quos autem illum
+            </Link>
           </Button>
         </li>
 
-        <li>
-          <Button variant={"link"} className="w-full">
-            Lorem ipsum dolor sit amet.
+        <li className="w-full truncate">
+          <Button variant={"link"} asChild>
+            <Link href={`/records/${uuid()}`}>
+              eius dicta, nesciunt repudiandae necessitatibus quos autem illum
+            </Link>
           </Button>
         </li>
       </ul>

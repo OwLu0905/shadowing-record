@@ -53,14 +53,14 @@ const SliderWithLabel = React.forwardRef<
                       const rect2 = map.get(1)!.getBoundingClientRect();
 
                       const isIntersecting = !(
-                        rect1.right + 2 * 16 < rect2.left ||
+                        rect1.right + 2 * 32 < rect2.left ||
                         rect1.left > rect2.right
                       );
 
                       if (isIntersecting) {
                         (
                           map?.get(1)?.firstElementChild as HTMLElement
-                        ).style.top = "-200%";
+                        ).style.top = "-400%";
                       } else {
                         (
                           map?.get(1)?.firstElementChild as HTMLElement
@@ -72,12 +72,12 @@ const SliderWithLabel = React.forwardRef<
                 observer.observe(map.get(0)!);
               }
             }}
-            className="relative block h-4 w-4 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+            className="relative block h-3 w-3 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
           >
             {subLabel !== undefined && (
               <div
                 className={
-                  "absolute top-4 text-sm right-0 left-1/2 -translate-x-1/2 w-fit cursor-grab"
+                  "absolute left-1/2 right-0 top-4 w-fit -translate-x-1/2 cursor-grab text-sm font-bold transition-all duration-150"
                 }
               >
                 <span>{subLabel[idx]}</span>
