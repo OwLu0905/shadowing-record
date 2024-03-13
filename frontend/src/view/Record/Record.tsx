@@ -136,27 +136,27 @@ const Record = () => {
     const elapsedTime = currentTime - triggerTime; // ms
 
     const playedTime = startTimer + elapsedTime / 1000;
-    const moveDistance = (playedTime * width * 2) / audioDuration;
+    const moveDistance = (playedTime * width ) / audioDuration;
 
     leftPixelDistanceRef.current = playedTime; // sec
 
     const rect = canvasRef.current.getBoundingClientRect();
 
     if (elapsedTime > playDuration * 1000) {
-      ctx?.clearRect(0, 0, rect.width * 2, rect.height * 2);
+      ctx?.clearRect(0, 0, rect.width , rect.height * 2);
       ctx?.beginPath();
       ctx.lineWidth = 5;
       ctx?.moveTo(
         !showResize
-          ? width * 2
-          : ((startTimer + playDuration) * width * 2) / audioDuration,
+          ? width 
+          : ((startTimer + playDuration) * width ) / audioDuration,
         0,
       );
       ctx?.lineTo(
         !showResize
-          ? width * 2
-          : ((startTimer + playDuration) * width * 2) / audioDuration,
-        rect.height * 2,
+          ? width 
+          : ((startTimer + playDuration) * width ) / audioDuration,
+        rect.height ,
       );
 
       ctx.strokeStyle = "orange";
@@ -165,7 +165,7 @@ const Record = () => {
       return;
     }
 
-    ctx?.clearRect(0, 0, rect.width * 2, rect.height * 2);
+    ctx?.clearRect(0, 0, rect.width , rect.height * 2);
     ctx?.beginPath();
     ctx.lineWidth = 5;
     ctx?.moveTo(moveDistance, 0);
@@ -324,7 +324,7 @@ const Record = () => {
                       progressRef.current.height = canvasRef.current.height;
 
                       const ctx = progressRef.current.getContext("2d")!;
-                      const width = canvasRef.current.width / 2;
+                      const width = canvasRef.current.width ;
                       const audioDuration = audioBuffer.duration; // sec
                       const startTime = leftPixelDistanceRef.current; // sec
 

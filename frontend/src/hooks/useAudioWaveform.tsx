@@ -39,7 +39,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
       if (!canvasContainer || !canvas) return;
 
       const start = 0;
-      const end = channelData.length * 2;
+      const end = channelData.length ;
       const pixelRatio = window.devicePixelRatio || 1;
 
       const length = channelData.length;

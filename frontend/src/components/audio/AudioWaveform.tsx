@@ -115,7 +115,7 @@ const AudioWaveform = (props: AudioWaveformProps) => {
       const ctx = progressRef.current.getContext("2d")!;
       const rect = canvasRef.current.getBoundingClientRect();
       const leftPixelDistance = event.clientX - rect.left;
-      const width = canvasRef.current.width / 2;
+      const width = canvasRef.current.width ;
       ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
       const audioDuration = audioBuffer.duration;
