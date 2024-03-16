@@ -13,10 +13,12 @@ import AudioWaveform from "@/components/audio/AudioWaveform";
 import { Mic, Pause, StepForward, StopCircle } from "lucide-react";
 import { throttle } from "@/util/throttle";
 import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
+import useAudioKit from "@/hooks/useAudioKit";
 
 const Record = () => {
   // NOTE: audio
-  const { data, state, utils } = useRecordMedia();
+  // const { data, state, utils } = useRecordMedia();
+  const { data, state, utils } = useAudioKit();
   const blobData = data.blob;
   const mediaState = state.mediaState;
   const isAvailable = state.deviceState;
@@ -281,8 +283,6 @@ const Record = () => {
         mic
       </div>
     );
-
-  console.log("check render progress2");
 
   return (
     <>
@@ -575,6 +575,14 @@ const Record = () => {
               </Button>
             )}
 
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={stop}
+              className="h-10 w-10 rounded-full p-0"
+            >
+              <StopCircle className="rounded-full p-0.5" />
+            </Button>
             {mediaState === "recording" ||
               (mediaState === "paused" && (
                 <Button

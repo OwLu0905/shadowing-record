@@ -87,8 +87,12 @@ const useRecordMedia = () => {
 
   const initializeDevice = async () => {
     try {
-      const stream =
-        await navigator.mediaDevices.getUserMedia(MEDIA_CONSTRAINT);
+      // const stream =
+      //   await navigator.mediaDevices.getUserMedia(MEDIA_CONSTRAINT);
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: "default" },
+      });
       setIsReady(true);
       setMediaStream(stream);
 

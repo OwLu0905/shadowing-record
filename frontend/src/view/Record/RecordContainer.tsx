@@ -11,7 +11,7 @@ import { SliderWithLabel } from "@/components/custom/ui/slider";
 import { format } from "date-fns/format";
 import PlayerActions from "../player/player-actions";
 
-const outurl = "https://www.youtube.com/embed/69kQ7S0_fO4";
+const outurl = "https://www.youtube.com/embed/u-ol2tpgVYI";
 
 export default function RecordPage() {
   const playerRef = useRef<ReactPlayer>(null);
