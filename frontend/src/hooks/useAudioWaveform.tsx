@@ -236,12 +236,29 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
     );
   }
 
+  useEffect(() => {
+    audioRef.current = new AudioContext();
+    let audio = audioRef.current;
+
+    return () => {
+      if (audio) {
+        audio
+          .close()
+          .then(() => {
+            console.log("AudioContext closed");
+          })
+          .catch((error) => {
+            console.error("Error closing AudioContext:", error);
+          });
+      }
+    };
+  }, []);
+
   // NOTE: data processing
   useEffect(() => {
     let ignore = false;
     async function getAudio() {
-      if (audioBlob) {
-        audioRef.current = new AudioContext();
+      if (audioBlob && audioRef.current) {
         const arrayBuff = await audioBlob.arrayBuffer();
         const audioCtxDecode =
           await audioRef.current.decodeAudioData(arrayBuff);
@@ -298,8 +315,12 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
       });
     }
   }, [drawWaveform, audioBuffer, containerState, canvas, clipCanvas]);
+  function clean() {
+    setAudioBuffer(undefined);
+  }
 
   return {
+    clean: clean,
     audioContext: audioRef.current,
     audioBuffer,
     drawProgress,

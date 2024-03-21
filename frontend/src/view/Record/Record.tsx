@@ -21,7 +21,7 @@ const Record = () => {
   const mediaState = state.mediaState;
   const isAvailable = state.deviceState;
 
-  const { start, stop, pause, resume } = utils;
+  const { start, stop, pause, resume, cleanup } = utils;
 
   // NOTE: Draw canvas
   const containerRef = useRef<HTMLDivElement>(null);
@@ -46,7 +46,12 @@ const Record = () => {
     right: 0,
   });
 
-  const { audioBuffer, audioContext, drawProgress } = useAudioWaveform({
+  const {
+    audioBuffer,
+    audioContext,
+    drawProgress,
+    clean: clearnAudioWave,
+  } = useAudioWaveform({
     containerState: container,
     canvas: canvasRef.current,
     clipCanvas: clipRef.current,
@@ -78,7 +83,8 @@ const Record = () => {
 
     return () => {
       if (source) {
-        stopAudio(source);
+        source.stop();
+        source.disconnect();
       }
       if (ctx && canvasRefItem && clipRefItem && clipCtx && progressCtx) {
         ctx.clearRect(0, 0, canvasRefItem.width, canvasRefItem.height);
@@ -143,6 +149,11 @@ const Record = () => {
     event: React.MouseEvent<HTMLElement, MouseEvent>,
   ) => {
     if (!canvasRef.current || !audioBuffer) return;
+
+    // NOTE: clear
+    if (requestIdRef.current) {
+      cancelAnimationFrame(requestIdRef.current);
+    }
 
     if (sourceRef.current) {
       await stopAudio(sourceRef.current)
@@ -217,6 +228,7 @@ const Record = () => {
         requestIdRef,
       });
 
+      console.log("source timer", startTimer, playDuration);
       source.start(0, startTimer, playDuration);
       sourceRef.current = source;
     }
@@ -282,8 +294,6 @@ const Record = () => {
       </div>
     );
 
-  console.log("check render progress2");
-
   return (
     <>
       <div className="flex flex-col gap-4">
@@ -344,184 +354,11 @@ const Record = () => {
               </div>
             )}
           </div>
-
-          {/* {mediaState === "inactive" && data.blob ? (
-            <AudioWaveform
-              requestIdRef={requestIdRef}
-              audioContext={audioContext}
-              pauseProgressRef={pauseProgressRef}
-              canvasRef={canvasRef}
-              audioBuffer={audioBuffer}
-              sourceRef={sourceRef}
-              stopAudio={stopAudio}
-              progressRef={progressRef}
-              showResize={showResize}
-              selectedInterval={selectedInterval}
-              canvasStyle={canvasStyle}
-              setSelectedInterval={setSelectedInterval}
-              containerRef={containerRef}
-              clipRegionRef={clipRegionRef}
-              clipRef={clipRef}
-              clipStyle={clipStyle}
-              drawProgress={drawProgress}
-            />
-          ) : (
-            <div className="h-[128px] bg-zinc-100"></div>
-          )} */}
         </div>
 
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
             <div className="flex items-center gap-x-2">
-              <div className="flex items-center">
-                <Button
-                  onClick={async () => {
-                    if (!pauseProgressRef.current) {
-                      return;
-                    }
-
-                    if (
-                      !audioContext ||
-                      !progressRef.current ||
-                      !canvasRef.current ||
-                      !audioBuffer ||
-                      leftPixelDistanceRef.current === null
-                    )
-                      return;
-
-                    await stopAudio(sourceRef.current)
-                      .then((message) => {
-                        console.log("message:", message);
-                      })
-                      .catch((error) => {
-                        console.error("error", error);
-                      });
-
-                    if (audioContext && audioBuffer) {
-                      const source = audioContext.createBufferSource();
-                      source.buffer = audioBuffer;
-                      source.connect(audioContext.destination);
-
-                      source.addEventListener(
-                        "ended",
-                        () => {
-                          console.log("Playback finished.");
-                        },
-                        { once: true },
-                      );
-
-                      if (!progressRef.current) return;
-                      progressRef.current.width = canvasRef.current.width;
-                      progressRef.current.height = canvasRef.current.height;
-
-                      progressRef.current.style.width =
-                        canvasRef.current.style.width;
-                      progressRef.current.style.height =
-                        canvasRef.current.style.height;
-                      progressRef.current.style.left =
-                        canvasRef.current.style.left;
-
-                      const ctx = progressRef.current.getContext("2d")!;
-                      const width = canvasRef.current.width;
-                      const audioDuration = audioBuffer.duration; // sec
-                      const startTime = leftPixelDistanceRef.current; // sec
-
-                      const triggerTime = performance.now(); // ms
-
-                      const startTimer = startTime;
-
-                      const playDuration = showResize
-                        ? ((width -
-                            selectedInterval.left -
-                            selectedInterval.right) /
-                            width) *
-                            audioDuration -
-                          startTimer // sec
-                        : audioDuration - startTimer; // sec
-
-                      pauseProgressRef.current = false;
-
-                      drawProgress({
-                        showResize,
-                        triggerTime,
-                        playDuration,
-                        startTimer,
-                        audioDuration,
-                        width,
-                        canvas: progressRef.current,
-                        ctx,
-                        clipRegionRef: clipRegionRef.current,
-                        pauseProgressRef,
-                        leftPixelDistanceRef,
-                        requestIdRef,
-                      });
-
-                      source.start(0, startTimer, playDuration);
-                      sourceRef.current = source;
-                    }
-                  }}
-                  variant={"ghost"}
-                  className="h-10 w-10 rounded-full p-0 text-cyan-600 hover:text-cyan-600/80"
-                >
-                  <StepForward className="rounded-full p-0.5" />
-                </Button>
-                <Button
-                  onClick={async () => {
-                    if (
-                      sourceRef.current &&
-                      requestIdRef.current &&
-                      progressRef.current
-                    ) {
-                      await stopAudio(sourceRef.current)
-                        .then((message) => {
-                          console.log("message:", message);
-                        })
-                        .catch((error) => {
-                          console.error("error", error);
-                        });
-
-                      pauseProgressRef.current = true;
-                      cancelAnimationFrame(requestIdRef.current);
-                    }
-                  }}
-                  variant={"ghost"}
-                  className="h-10 w-10 rounded-full p-0"
-                  aria-label="pause audio"
-                >
-                  <Pause className="rounded-full p-0.5 text-amber-600 hover:text-amber-600/80" />
-                </Button>
-                <Button
-                  variant={"ghost"}
-                  onClick={async () => {
-                    await stopAudio(sourceRef.current);
-
-                    if (requestIdRef.current) {
-                      cancelAnimationFrame(requestIdRef.current);
-                    }
-
-                    pauseProgressRef.current = false;
-
-                    if (progressRef.current && canvasRef.current) {
-                      const progressCtx = progressRef.current.getContext("2d");
-                      progressCtx?.clearRect(
-                        0,
-                        0,
-                        canvasRef.current.width,
-                        canvasRef.current.height,
-                      );
-                    }
-
-                    if (clipRegionRef.current) {
-                      clipRegionRef.current.style["clipPath"] = "none";
-                    }
-                  }}
-                  className="h-10 w-10 rounded-full p-0 text-rose-600 hover:text-rose-600/80"
-                  aria-label="stop audio"
-                >
-                  <StopCircle className="rounded-full p-0.5" />
-                </Button>
-              </div>
-
               <div className="my-4 flex items-center gap-2">
                 <Checkbox
                   id="resize"
@@ -575,17 +412,27 @@ const Record = () => {
               </Button>
             )}
 
-            {mediaState === "recording" ||
-              (mediaState === "paused" && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={stop}
-                  className="h-10 w-10 rounded-full p-0"
-                >
-                  <StopCircle className="rounded-full p-0.5" />
-                </Button>
-              ))}
+            {(mediaState === "recording" || mediaState === "paused") && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={stop}
+                className="h-10 w-10 rounded-full p-0"
+              >
+                <StopCircle className="rounded-full p-0.5" />
+              </Button>
+            )}
+            <Button
+              onClick={() => {
+                cleanup();
+                clearnAudioWave();
+                if (requestIdRef.current) {
+                  cancelAnimationFrame(requestIdRef.current);
+                }
+              }}
+            >
+              X
+            </Button>
           </div>
         </div>
 

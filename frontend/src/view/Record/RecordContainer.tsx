@@ -19,7 +19,6 @@ export default function RecordPage() {
     0, 0,
   ]);
   const [playing, setPlaying] = useState(false);
-  // const [prepared, setPrepared] = useState(false);
 
   const [hasWindow, setHasWindow] = useState(false);
 
@@ -59,7 +58,6 @@ export default function RecordPage() {
               onProgress={handleProgress}
               onReady={(e) => {
                 setSliderValue([0, e.getDuration()]);
-                // setPrepared(true);
               }}
               controls={true}
             />
