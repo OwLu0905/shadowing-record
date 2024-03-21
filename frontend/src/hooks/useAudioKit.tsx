@@ -143,9 +143,8 @@ const useAudioKit = () => {
 
   const initializeDevice = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
+      const stream =
+        await navigator.mediaDevices.getUserMedia(MEDIA_CONSTRAINT);
       mediaStreamRef.current = stream;
 
       audioContextRef.current = new AudioContext();

@@ -1,5 +1,5 @@
 export const MEDIA_CONSTRAINT: MediaStreamConstraints = {
-  audio: true,
+  audio: { echoCancellation: false },
 };
 
 // NOTE: ref: wavesurfer
