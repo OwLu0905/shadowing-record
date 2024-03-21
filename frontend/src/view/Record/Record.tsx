@@ -8,8 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
-import AudioWaveform from "@/components/audio/AudioWaveform";
-
 import { Mic, Pause, StepForward, StopCircle } from "lucide-react";
 import { throttle } from "@/util/throttle";
 import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
@@ -228,7 +226,6 @@ const Record = () => {
         requestIdRef,
       });
 
-      console.log("source timer", startTimer, playDuration);
       source.start(0, startTimer, playDuration);
       sourceRef.current = source;
     }

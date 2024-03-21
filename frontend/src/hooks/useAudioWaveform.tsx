@@ -155,14 +155,13 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
     width: number;
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
-    clipRegionRef: any;
-    pauseProgressRef: any;
-    leftPixelDistanceRef: any;
-    requestIdRef: any;
+    clipRegionRef: HTMLDivElement | null;
+    pauseProgressRef: React.MutableRefObject<boolean | null>;
+    leftPixelDistanceRef: React.MutableRefObject<number | null>;
+    requestIdRef: React.MutableRefObject<number | null>;
   }) {
     if (startTimer === null) return;
     if (pauseProgressRef.current) return;
-    console.log("check render progress");
 
     const currentTime = performance.now();
     const elapsedTime = currentTime - triggerTime; // ms
@@ -173,6 +172,10 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
     leftPixelDistanceRef.current = playedTime; // sec
 
     if (elapsedTime > playDuration * 1000) {
+      if (requestIdRef.current) {
+        cancelAnimationFrame(requestIdRef.current);
+      }
+
       ctx?.clearRect(0, 0, canvas.width, canvas.height * 2);
       ctx?.beginPath();
       ctx.lineWidth = 5;
@@ -192,11 +195,11 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
       ctx.strokeStyle = "orange";
       ctx?.stroke();
 
-      if (clipRegionRef) {
-        // clipRegionRef.style.clipPath = `polygon(0% 0%, 0% 100%, 100% 100%, 100% 0%)`;
-        // clipRegionRef.style.clipPath =
-        //   "polygon(100% 0px, 100% 0px, 100% 100%, 100% 100%)";
-      }
+      // if (clipRegionRef) {
+      // clipRegionRef.style.clipPath = `polygon(0% 0%, 0% 100%, 100% 100%, 100% 0%)`;
+      // clipRegionRef.style.clipPath =
+      //   "polygon(100% 0px, 100% 0px, 100% 100%, 100% 100%)";
+      // }
 
       return;
     }
