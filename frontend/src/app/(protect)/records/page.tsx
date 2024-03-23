@@ -1,8 +1,8 @@
 import React from "react";
-import Record from "@/view/Record/RecordContainer";
+import RecordContainer from "@/view/record/RecordContainer";
 
 const RecordPage = () => {
-  return <Record />;
+  return <RecordContainer />;
 };
 
 export default RecordPage;

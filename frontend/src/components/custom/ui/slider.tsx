@@ -60,7 +60,7 @@ const SliderWithLabel = React.forwardRef<
                       if (isIntersecting) {
                         (
                           map?.get(1)?.firstElementChild as HTMLElement
-                        ).style.top = "-400%";
+                        ).style.top = "-250%";
                       } else {
                         (
                           map?.get(1)?.firstElementChild as HTMLElement
@@ -77,7 +77,7 @@ const SliderWithLabel = React.forwardRef<
             {subLabel !== undefined && (
               <div
                 className={
-                  "absolute left-1/2 right-0 top-4 w-fit -translate-x-1/2 cursor-grab text-sm font-bold transition-all duration-150"
+                  "absolute left-1/2 right-0 top-4 w-fit -translate-x-1/2 cursor-grab text-xs text-gray-500 transition-all duration-150 dark:text-gray-300"
                 }
               >
                 <span>{subLabel[idx]}</span>

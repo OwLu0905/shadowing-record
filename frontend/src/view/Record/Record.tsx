@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
-import { Mic, Pause, StepForward, StopCircle } from "lucide-react";
+import { Mic, Pause, StepForward, StopCircle, Trash2 } from "lucide-react";
 import { throttle } from "@/util/throttle";
 import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
 
@@ -420,6 +420,7 @@ const Record = () => {
               </Button>
             )}
             <Button
+              variant={"ghost"}
               onClick={() => {
                 cleanup();
                 clearnAudioWave();
@@ -428,7 +429,7 @@ const Record = () => {
                 }
               }}
             >
-              X
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>

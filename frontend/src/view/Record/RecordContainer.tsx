@@ -1,17 +1,15 @@
 "use client";
+import { useEffect, useRef, useState } from "react";
+import ReactPlayer from "react-player";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardContent, Card } from "@/components/ui/card";
-import Record from "./Record";
-import History from "./History";
-import HistoryMobile from "./HistoryMobile";
-import { useEffect, useRef, useState } from "react";
-import ReactPlayer from "react-player";
-import { SliderWithLabel } from "@/components/custom/ui/slider";
-import { format } from "date-fns/format";
-import PlayerActions from "../player/player-actions";
 
-const outurl = "https://www.youtube.com/embed/69kQ7S0_fO4";
+import Player from "@/view/player/player";
+import Record from "@/view/record/Record";
+import History from "@/view/record/History";
+import HistoryMobile from "@/view/record/HistoryMobile";
 
 export default function RecordPage() {
   const playerRef = useRef<ReactPlayer>(null);
@@ -44,67 +42,12 @@ export default function RecordPage() {
   return (
     <>
       <section className="container mx-auto flex flex-col py-10 lg:flex-row lg:gap-x-6">
-        <div className="flex_0_0_auto flex w-full flex-col items-center justify-center lg:w-1/2">
-          {hasWindow && (
-            <ReactPlayer
-              ref={playerRef}
-              url={outurl}
-              width="100%"
-              height="400px"
-              onPlay={() => {
-                setPlaying(true);
-              }}
-              playing={playing}
-              onProgress={handleProgress}
-              onReady={(e) => {
-                setSliderValue([0, e.getDuration()]);
-              }}
-              controls={true}
-            />
-          )}
-
-          <div className="w-full bg-background py-10">
-            {hasWindow && playerRef.current && (
-              <SliderWithLabel
-                className=""
-                defaultValue={[0, playerRef.current.getDuration()]}
-                onValueChange={
-                  setSliderValue as React.Dispatch<
-                    React.SetStateAction<number[]>
-                  >
-                }
-                step={1}
-                max={playerRef.current?.getDuration() ?? 100}
-                subLabel={[
-                  format(sliderValue[0] * 1000, "mm:ss"),
-                  format(sliderValue[1] * 1000, "mm:ss"),
-                ]}
-              />
-            )}
-          </div>
-          <PlayerActions
-            playerRef={playerRef}
-            sliderValue={sliderValue}
-            playing={playing}
-            setPlaying={setPlaying}
-          />
+        <div className="w-full lg:w-1/2">
+          <Player />
         </div>
-
         <div className="flex w-full flex-col gap-4 lg:w-1/2">
-          <div className="flex items-center">
-            <h4 className="text-lg font-semibold md:text-2xl">Recordings</h4>
-            <Button className="ml-auto" size="sm">
-              New Recording
-            </Button>
-          </div>
-          <Card className="rounded-lg border shadow-sm">
-            <CardHeader>
-              <h2 className="text-lg font-semibold md:text-2xl">Waveform</h2>
-            </CardHeader>
-            <CardContent>
-              <Record />
-            </CardContent>
-          </Card>
+          <h4 className="text-lg font-semibold md:text-2xl">Recordings</h4>
+          <Record />
           <Card className="mt-4 rounded-lg border shadow-sm">
             <CardHeader>
               <h2 className="text-lg font-semibold md:text-2xl">
