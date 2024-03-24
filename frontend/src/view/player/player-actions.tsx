@@ -8,12 +8,13 @@ type PlayerActionsProps = {
   sliderValue: [start: number, end: number];
   playing: boolean;
   setPlaying: (value: React.SetStateAction<boolean>) => void;
+  disableActions: boolean;
 };
 const PlayerActions = (props: PlayerActionsProps) => {
-  const { playerRef, sliderValue, playing, setPlaying } = props;
+  const { playerRef, sliderValue, playing, setPlaying, disableActions } = props;
   return (
     <div className="flex items-center">
-      <Button size="sm" variant="ghost">
+      <Button size="sm" variant="ghost" disabled={disableActions}>
         <FastForward className="h-4 w-4 rotate-180" />
       </Button>
       <Button
@@ -33,10 +34,11 @@ const PlayerActions = (props: PlayerActionsProps) => {
           }
           setPlaying((prev) => !prev);
         }}
+        disabled={disableActions}
       >
         {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
       </Button>
-      <Button size="sm" variant="ghost">
+      <Button size="sm" variant="ghost" disabled={disableActions}>
         <FastForward className="h-4 w-4" />
       </Button>
       <Button
@@ -46,6 +48,7 @@ const PlayerActions = (props: PlayerActionsProps) => {
           playerRef.current?.seekTo(sliderValue[0]);
           setPlaying(true);
         }}
+        disabled={disableActions}
       >
         <RotateCw className="h-4 w-4" />
       </Button>

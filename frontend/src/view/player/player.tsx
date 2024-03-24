@@ -15,17 +15,48 @@ import { SliderWithLabel } from "@/components/custom/ui/slider";
 
 import PlayerActions from "@/view/player/player-actions";
 
-import { MicIcon, Pause, Pencil } from "lucide-react";
+import { MicIcon, Pause, Pencil, StepForward, StopCircle } from "lucide-react";
 
 const outurl = "https://www.youtube.com/embed/69kQ7S0_fO4";
-const Player = () => {
-  const playerRef = useRef<ReactPlayer>(null);
 
-  const [playing, setPlaying] = useState(false);
-  const [sliderValue, setSliderValue] = useState<[start: number, end: number]>([
-    0, 0,
-  ]);
-  const [hasWindow, setHasWindow] = useState(false);
+type SliderState = [start: number, end: number];
+
+type PlayerProps = {
+  playerRef: React.RefObject<ReactPlayer>;
+
+  playing: boolean;
+  setPlaying: React.Dispatch<React.SetStateAction<boolean>>;
+
+  hasWindow: boolean;
+  setHasWindow: React.Dispatch<React.SetStateAction<boolean>>;
+
+  sliderValue: SliderState;
+  setSliderValue: React.Dispatch<React.SetStateAction<SliderState>>;
+  onSyncRecord: (sync: boolean) => Promise<void>;
+  onSyncResume: () => void;
+  onSyncPause: () => void;
+  onSyncStop: () => void;
+  mediaState: RecordingState;
+};
+
+const Player = (props: PlayerProps) => {
+  const {
+    playerRef,
+    playing,
+    setPlaying,
+    hasWindow,
+    setHasWindow,
+    sliderValue,
+    setSliderValue,
+    onSyncRecord,
+    onSyncResume,
+    onSyncPause,
+    onSyncStop,
+    mediaState,
+  } = props;
+
+  const disablePlayerActions =
+    mediaState === "recording" || mediaState === "paused";
 
   const handleProgress = () => {
     if (playerRef.current) {
@@ -100,6 +131,7 @@ const Player = () => {
                   format(sliderValue[0] * 1000, "mm:ss"),
                   format(sliderValue[1] * 1000, "mm:ss"),
                 ]}
+                disabled={disablePlayerActions}
               />
             )}
           </div>
@@ -108,30 +140,64 @@ const Player = () => {
             sliderValue={sliderValue}
             playing={playing}
             setPlaying={setPlaying}
+            disableActions={disablePlayerActions}
           />
         </CardContent>
       </Card>
 
       <div className="flex justify-center space-x-4">
-        <Button size="sm" variant="secondary">
-          {false ? (
-            <Pause className="h-5 w-5 text-red-600" />
-          ) : (
-            <>
-              <MicIcon className="mr-1 h-5 w-5 text-orange-400" /> Without Sound
-            </>
-          )}
-        </Button>
-        <Button size="sm" variant="secondary">
-          {false ? (
-            <Pause className="h-5 w-5 text-red-600" />
-          ) : (
-            <>
-              <MicIcon className="mr-1 h-5 w-5 text-red-600" />
-              Sync
-            </>
-          )}
-        </Button>
+        {mediaState === "inactive" && (
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => onSyncRecord(false)}
+          >
+            <MicIcon className="mr-1 h-5 w-5 text-orange-400" /> Without Sound
+          </Button>
+        )}
+        {mediaState === "inactive" && (
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => onSyncRecord(true)}
+          >
+            <MicIcon className="mr-1 h-5 w-5 text-red-600" />
+            Sync
+          </Button>
+        )}
+
+        {mediaState === "paused" && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onSyncResume}
+            className="h-10 w-10 rounded-full p-0"
+          >
+            <StepForward className="rounded-full p-0.5" />
+          </Button>
+        )}
+
+        {mediaState === "recording" && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onSyncPause}
+            className="h-10 w-10 rounded-full p-0"
+          >
+            <Pause className="rounded-full p-0.5" />
+          </Button>
+        )}
+
+        {(mediaState === "recording" || mediaState === "paused") && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onSyncStop}
+            className="h-10 w-10 rounded-full p-0"
+          >
+            <StopCircle className="rounded-full p-0.5" />
+          </Button>
+        )}
       </div>
     </>
   );

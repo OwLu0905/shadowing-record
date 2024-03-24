@@ -12,9 +12,29 @@ import { Mic, Pause, StepForward, StopCircle, Trash2 } from "lucide-react";
 import { throttle } from "@/util/throttle";
 import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
 
-const Record = () => {
+type RecordProps = {
+  data: {
+    strem: MediaStream | null;
+    blob: Blob | null;
+    url: string | null;
+  };
+  state: {
+    mediaState: RecordingState;
+    deviceState: boolean | undefined;
+  };
+  utils: {
+    start: () => Promise<void>;
+    stop: () => void;
+    pause: () => void;
+    resume: () => void;
+    disconnect: () => void;
+    cleanup: () => void;
+  };
+};
+
+const Record = (props: RecordProps) => {
   // NOTE: audio
-  const { data, state, utils } = useRecordMedia();
+  const { data, state, utils } = props;
   const blobData = data.blob;
   const mediaState = state.mediaState;
   const isAvailable = state.deviceState;
@@ -422,6 +442,9 @@ const Record = () => {
             <Button
               variant={"ghost"}
               onClick={() => {
+                if (sourceRef.current) {
+                  sourceRef.current.stop();
+                }
                 cleanup();
                 clearnAudioWave();
                 if (requestIdRef.current) {
