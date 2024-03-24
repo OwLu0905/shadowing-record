@@ -6,6 +6,7 @@ import Player from "@/view/player/player";
 import Record from "@/view/record/Record";
 
 import useRecordMedia from "@/hooks/useRecordMedia";
+import WarningDialog from "@/components/common/warn-dialog";
 
 export default function RecordPage() {
   const { data, state, utils } = useRecordMedia();
@@ -15,8 +16,9 @@ export default function RecordPage() {
     0, 0,
   ]);
   const [playing, setPlaying] = useState(false);
-
   const [hasWindow, setHasWindow] = useState(false);
+
+  const [warning, setWarning] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -25,6 +27,20 @@ export default function RecordPage() {
   }, []);
 
   async function onSyncRecord(sync: boolean) {
+    if (data.blob) {
+      setWarning(true);
+      return;
+    }
+
+    await utils.start();
+
+    if (!playerRef.current) return;
+    playerRef.current?.seekTo(sliderValue[0]);
+
+    setPlaying(true);
+  }
+
+  async function onConfirmSyncRecord(sync: boolean) {
     await utils.start();
 
     if (!playerRef.current) return;
@@ -75,6 +91,14 @@ export default function RecordPage() {
           />
         </div>
       </section>
+      <WarningDialog
+        show={warning}
+        handleClose={setWarning}
+        label={"test"}
+        title="Sure"
+        description="aaa"
+        onConfirm={onConfirmSyncRecord}
+      />
     </>
   );
 }

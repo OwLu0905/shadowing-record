@@ -76,7 +76,7 @@ const Player = (props: PlayerProps) => {
     if (typeof window !== "undefined") {
       setHasWindow(true);
     }
-  }, []);
+  }, [setHasWindow]);
 
   function startPlaying() {
     setPlaying(true);

@@ -59,6 +59,7 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
       containerState: HTMLElement;
       audioBuffer: AudioBuffer;
     }) => {
+      // console.log(audioBuffer.duration, "duration");
       const channelData = audioBuffer.getChannelData(0);
 
       const ctx = drawCanvas(
@@ -282,28 +283,19 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
 
   // NOTE: resize
   useEffect(() => {
+    let handleResize: (() => Promise<void>) | undefined = undefined;
     if (canvas && clipCanvas && containerState && audioBuffer) {
-      window.addEventListener(
-        "resize",
-        drawWaveform.bind(null, {
-          canvas,
-          containerState,
-          audioBuffer,
-          clipCanvas,
-        }),
-      );
+      handleResize = drawWaveform.bind(null, {
+        canvas,
+        containerState,
+        audioBuffer,
+        clipCanvas,
+      });
+      window.addEventListener("resize", handleResize);
     }
     return () => {
-      if (canvas && clipCanvas && containerState && audioBuffer)
-        containerState.removeEventListener(
-          "resize",
-          drawWaveform.bind(null, {
-            canvas,
-            audioBuffer,
-            containerState,
-            clipCanvas,
-          }),
-        );
+      if (canvas && clipCanvas && containerState && audioBuffer && handleResize)
+        window.removeEventListener("resize", handleResize);
     };
   }, [audioBuffer, canvas, clipCanvas, containerState, drawWaveform]);
 
