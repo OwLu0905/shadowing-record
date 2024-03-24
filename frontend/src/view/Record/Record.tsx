@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 
-import useRecordMedia from "@/hooks/useRecordMedia";
 import useAudioWaveform from "@/hooks/useAudioWaveform";
 
 import { Button } from "@/components/ui/button";
@@ -79,22 +78,23 @@ const Record = (props: RecordProps) => {
   useEffect(() => {
     if (blobData && containerRef.current) {
       setContainer(containerRef.current);
-    } else {
-      setContainer(null);
     }
+
+    return () => {
+      setContainer(null);
+    };
   }, [blobData]);
 
   useEffect(() => {
     if (!clipRef.current || !canvasRef.current || !progressRef.current) return;
 
     const canvasRefItem = canvasRef.current;
-    const clipRefItem = clipRef.current;
-
     const ctx = canvasRef.current.getContext("2d");
 
     const progressCanvas = progressRef.current;
     const progressCtx = progressCanvas?.getContext("2d");
 
+    const clipRefItem = clipRef.current;
     const clipCtx = clipRef.current.getContext("2d");
 
     const source = sourceRef.current;
@@ -111,14 +111,14 @@ const Record = (props: RecordProps) => {
         progressCtx.clearRect(
           0,
           0,
-          progressCanvas?.width,
+          progressCanvas.width,
           progressCanvas.height,
         );
       }
     };
   }, [blobData]);
 
-  function stopAudio(sourceNode: any) {
+  function stopAudio(sourceNode: AudioBufferSourceNode) {
     return new Promise((resolve, reject) => {
       if (!sourceNode) {
         resolve("No audio source to stop.");

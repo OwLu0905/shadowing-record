@@ -59,7 +59,6 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
       containerState: HTMLElement;
       audioBuffer: AudioBuffer;
     }) => {
-      // console.log(audioBuffer.duration, "duration");
       const channelData = audioBuffer.getChannelData(0);
 
       const ctx = drawCanvas(
@@ -294,8 +293,9 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
       window.addEventListener("resize", handleResize);
     }
     return () => {
-      if (canvas && clipCanvas && containerState && audioBuffer && handleResize)
+      if (handleResize) {
         window.removeEventListener("resize", handleResize);
+      }
     };
   }, [audioBuffer, canvas, clipCanvas, containerState, drawWaveform]);
 
