@@ -13,8 +13,8 @@ import {
 const History = () => {
   return (
     <div>
-      <h2 className="font-semibold text-lg md:text-2xl">Recording History</h2>
-      <div className="hidden md:block border shadow-sm rounded-lg mt-4 overflow-x-auto">
+      <h2 className="text-lg font-semibold md:text-2xl">Recording History</h2>
+      <div className="mt-4 hidden overflow-x-auto rounded-lg border shadow-sm md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -35,8 +35,40 @@ const History = () => {
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <Button className="w-8 h-8 rounded-full">2</Button>
-                  <Button className="w-8 h-8 rounded-full">3</Button>
+                  <Button className="h-8 w-8 rounded-full">2</Button>
+                  <Button className="h-8 w-8 rounded-full">3</Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+          <TableBody>
+            <TableRow>
+              <TableCell>Feb 6, 2024</TableCell>
+              <TableCell>Meeting with team</TableCell>
+              <TableCell className="md:table-cell">1h 30m</TableCell>
+              <TableCell>
+                <div className="h-6 w-full bg-gray-200" />
+              </TableCell>
+              <TableCell>
+                <div className="flex gap-2">
+                  <Button className="h-8 w-8 rounded-full">2</Button>
+                  <Button className="h-8 w-8 rounded-full">3</Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+          <TableBody>
+            <TableRow>
+              <TableCell>Feb 6, 2024</TableCell>
+              <TableCell>Meeting with team</TableCell>
+              <TableCell className="md:table-cell">1h 30m</TableCell>
+              <TableCell>
+                <div className="h-6 w-full bg-gray-200" />
+              </TableCell>
+              <TableCell>
+                <div className="flex gap-2">
+                  <Button className="h-8 w-8 rounded-full">2</Button>
+                  <Button className="h-8 w-8 rounded-full">3</Button>
                 </div>
               </TableCell>
             </TableRow>

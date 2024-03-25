@@ -7,6 +7,7 @@ import Record from "@/view/record/Record";
 
 import useRecordMedia from "@/hooks/useRecordMedia";
 import WarningDialog from "@/components/common/warn-dialog";
+import History from "./History";
 
 export default function RecordPage() {
   const { data, state, utils } = useRecordMedia();
@@ -82,7 +83,7 @@ export default function RecordPage() {
           />
         </div>
         <div className="flex w-full flex-col gap-4 lg:w-1/2">
-          <h4 className="text-lg font-semibold md:text-2xl">Recordings</h4>
+          <h4 className="text-lg font-semibold md:text-2xl"></h4>
           <Record
             key={data?.strem?.id ?? "record-id"}
             data={data}
@@ -95,10 +96,13 @@ export default function RecordPage() {
         show={warning}
         handleClose={setWarning}
         label={"test"}
-        title="Sure"
-        description="aaa"
+        title="Warning: Unsaved Data"
+        description="You have unsaved changes. Do you want to continue editing or discard the changes and start new?"
         onConfirm={onConfirmSyncRecord}
       />
+      <section className="container mx-auto flex flex-col">
+        <History />
+      </section>
     </>
   );
 }

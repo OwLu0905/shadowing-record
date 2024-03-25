@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Mic2, MicIcon, Pencil } from "lucide-react";
 
 type WarningDialogProps = {
   show: boolean;
@@ -29,26 +30,28 @@ const WarningDialog = ({
     <Dialog open={show} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle className="pb-4">{title}</DialogTitle>
+          <DialogDescription className="pb-2">{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex">
           <Button
+            size="sm"
             type="button"
             variant="secondary"
             onClick={() => handleClose(false)}
           >
-            Continue Editing
+            <Pencil className="mr-2 h-4 w-4" /> Keep Editing
           </Button>
           <Button
+            size="sm"
             type="button"
-            variant="default"
+            variant="destructive"
             onClick={async () => {
               await onConfirm(true);
               handleClose(false);
             }}
           >
-            Contiue to record
+            <MicIcon className="mr-2 h-4 w-4" /> Start New
           </Button>
         </DialogFooter>
       </DialogContent>

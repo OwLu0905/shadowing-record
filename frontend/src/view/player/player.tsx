@@ -17,7 +17,7 @@ import PlayerActions from "@/view/player/player-actions";
 
 import { MicIcon, Pause, Pencil, StepForward, StopCircle } from "lucide-react";
 
-const outurl = "https://www.youtube.com/embed/69kQ7S0_fO4";
+const outurl = "https://www.youtube.com/embed/u-ol2tpgVYI";
 
 type SliderState = [start: number, end: number];
 
@@ -55,8 +55,7 @@ const Player = (props: PlayerProps) => {
     mediaState,
   } = props;
 
-  const disablePlayerActions =
-    mediaState === "recording" || mediaState === "paused";
+  const isRecording = mediaState === "recording" || mediaState === "paused";
 
   const handleProgress = () => {
     if (playerRef.current) {
@@ -131,7 +130,7 @@ const Player = (props: PlayerProps) => {
                   format(sliderValue[0] * 1000, "mm:ss"),
                   format(sliderValue[1] * 1000, "mm:ss"),
                 ]}
-                disabled={disablePlayerActions}
+                disabled={isRecording}
               />
             )}
           </div>
@@ -140,7 +139,7 @@ const Player = (props: PlayerProps) => {
             sliderValue={sliderValue}
             playing={playing}
             setPlaying={setPlaying}
-            disableActions={disablePlayerActions}
+            disableActions={isRecording}
           />
         </CardContent>
       </Card>
@@ -167,35 +166,28 @@ const Player = (props: PlayerProps) => {
         )}
 
         {mediaState === "paused" && (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onSyncResume}
-            className="h-10 w-10 rounded-full p-0"
-          >
-            <StepForward className="rounded-full p-0.5" />
+          <Button size="sm" variant="secondary" onClick={onSyncResume}>
+            <StepForward className="mr-1 h-5 w-5" />
           </Button>
         )}
 
         {mediaState === "recording" && (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onSyncPause}
-            className="h-10 w-10 rounded-full p-0"
-          >
-            <Pause className="rounded-full p-0.5" />
+          <Button size="sm" variant="secondary" onClick={onSyncPause}>
+            <Pause className="mr-1 h-5 w-5" />
           </Button>
         )}
 
         {(mediaState === "recording" || mediaState === "paused") && (
           <Button
+            size="sm"
             type="button"
-            variant="ghost"
+            variant="secondary"
             onClick={onSyncStop}
-            className="h-10 w-10 rounded-full p-0"
+            data-recording={isRecording}
+            className="data-[recording=true]:animate-sparkup"
           >
-            <StopCircle className="rounded-full p-0.5" />
+            <StopCircle className="mr-1 h-5 w-5 text-red-600" />
+            End
           </Button>
         )}
       </div>

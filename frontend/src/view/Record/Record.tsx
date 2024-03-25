@@ -36,9 +36,10 @@ const Record = (props: RecordProps) => {
   const { data, state, utils } = props;
   const blobData = data.blob;
   const mediaState = state.mediaState;
+  const isRecording = mediaState === "recording" || mediaState === "paused";
   const isAvailable = state.deviceState;
 
-  const { start, stop, pause, resume, cleanup } = utils;
+  const { cleanup } = utils;
 
   // NOTE: Draw canvas
   const containerRef = useRef<HTMLDivElement>(null);
@@ -313,12 +314,30 @@ const Record = (props: RecordProps) => {
 
   return (
     <>
-      <div className="flex flex-col gap-4">
-        <div
-          className="relative flex w-full flex-col"
-          onClick={handleCanvasClick}
+      <div className="flex flex-grow flex-col">
+        <Button
+          data-recording={!!blobData}
+          className="mb-4 self-end data-[recording=true]:visible data-[recording=false]:invisible"
+          variant={"secondary"}
+          onClick={() => {
+            if (sourceRef.current) {
+              sourceRef.current.stop();
+            }
+            cleanup();
+            clearnAudioWave();
+            if (requestIdRef.current) {
+              cancelAnimationFrame(requestIdRef.current);
+            }
+          }}
         >
-          <div ref={containerRef} className="relative h-[128px] w-full">
+          <Trash2 className="mr-2 h-5 w-5" /> Delete
+        </Button>
+        <div
+          className="relative flex w-full flex-col data-[recording=true]:animate-sparkup data-[recording=true]:outline data-[recording=true]:outline-red-500"
+          onClick={handleCanvasClick}
+          data-recording={isRecording}
+        >
+          <div ref={containerRef} className="relative h-[160px] w-full">
             <canvas
               ref={canvasRef}
               className="h-full w-full bg-secondary/20"
@@ -328,7 +347,7 @@ const Record = (props: RecordProps) => {
           <div
             aria-label="clip-region"
             ref={clipRegionRef}
-            className="absolute top-0 h-[128px] w-full"
+            className="absolute top-0 h-[160px] w-full"
           >
             <canvas
               ref={clipRef}
@@ -338,7 +357,7 @@ const Record = (props: RecordProps) => {
 
           <div
             aria-label="progress-resize-region"
-            className="absolute top-0 h-[128px] w-full"
+            className="absolute top-0 h-[160px] w-full"
           >
             <canvas
               ref={progressRef}
@@ -373,7 +392,7 @@ const Record = (props: RecordProps) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between py-2">
           <div className="flex gap-2">
             <div className="flex items-center gap-x-2">
               <div className="my-4 flex items-center gap-2">
@@ -387,81 +406,16 @@ const Record = (props: RecordProps) => {
                 />
                 <label
                   htmlFor="resize"
-                  className="text-sm font-medium text-lime-600"
+                  className="cursor-pointer text-sm font-medium text-lime-600"
                 >
                   Show Region
                 </label>
               </div>
             </div>
           </div>
-          <div className="flex gap-2">
-            {mediaState === "inactive" && (
-              <Button
-                type="button"
-                variant={"secondary"}
-                onClick={async () => await start()}
-                title="Record"
-                className="h-10 w-10 rounded-full p-0"
-              >
-                <Mic className="rounded-full p-0.5" />
-              </Button>
-            )}
-
-            {mediaState === "paused" && (
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={resume}
-                className="h-10 w-10 rounded-full p-0"
-              >
-                <StepForward className="rounded-full p-0.5" />
-              </Button>
-            )}
-
-            {mediaState === "recording" && (
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={pause}
-                className="h-10 w-10 rounded-full p-0"
-              >
-                <Pause className="rounded-full p-0.5" />
-              </Button>
-            )}
-
-            {(mediaState === "recording" || mediaState === "paused") && (
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={stop}
-                className="h-10 w-10 rounded-full p-0"
-              >
-                <StopCircle className="rounded-full p-0.5" />
-              </Button>
-            )}
-            <Button
-              variant={"ghost"}
-              onClick={() => {
-                if (sourceRef.current) {
-                  sourceRef.current.stop();
-                }
-                cleanup();
-                clearnAudioWave();
-                if (requestIdRef.current) {
-                  cancelAnimationFrame(requestIdRef.current);
-                }
-              }}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
         </div>
 
-        <Button
-          onClick={async () => {
-            await saveAudioToFile();
-          }}
-        >
+        <Button className="w-fit self-end" onClick={saveAudioToFile}>
           Save
         </Button>
       </div>
