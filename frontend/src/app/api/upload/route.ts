@@ -1,12 +1,14 @@
 import {
   PutObjectCommand,
-  PutObjectCommandInput,
+  type PutObjectCommandInput,
   S3Client,
 } from "@aws-sdk/client-s3";
 
 import { EnvParseConfig } from "@/util/env.schema";
+import { v4 as uuid } from "uuid";
 
 import { NextRequest } from "next/server";
+import { auth } from "@/lib/auth";
 
 export const config = {
   api: {
@@ -16,8 +18,14 @@ export const config = {
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
+  const user = await auth();
+
+  if (!user) {
+    return new Response("unauthorization", { status: 401 });
+  }
+
   try {
-    const data = formData.get("image") as File;
+    const data = formData.get("file") as File;
 
     const s3 = new S3Client({
       credentials: {
@@ -32,12 +40,21 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await data.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    const currentTimestamp = new Date();
+    const formattedTimestamp = currentTimestamp
+      .toISOString()
+      .replace(/[-:.]/g, "")
+      .slice(0, 15);
+
     const params: PutObjectCommandInput = {
       Bucket: EnvParseConfig.BUCKET_NAME,
-      Key: `images/${filename}`, // Include the filename in the key
+      Key: `images/${formattedTimestamp}_${uuid()}`, // Include the filename in the key
       Body: buffer,
       ContentType: fileType,
     };
+
+    const userId = user?.user?.id;
+    // TODO: write data info to database
 
     const command = new PutObjectCommand(params);
     await s3.send(command);

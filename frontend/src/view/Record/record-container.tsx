@@ -9,7 +9,7 @@ import useRecordMedia from "@/hooks/useRecordMedia";
 import WarningDialog from "@/components/common/warn-dialog";
 import History from "./History";
 
-export default function RecordPage() {
+const RecordContainer = () => {
   const { data, state, utils } = useRecordMedia();
   const playerRef = useRef<ReactPlayer>(null);
 
@@ -105,4 +105,5 @@ export default function RecordPage() {
       </section>
     </>
   );
-}
+};
+export default RecordContainer;

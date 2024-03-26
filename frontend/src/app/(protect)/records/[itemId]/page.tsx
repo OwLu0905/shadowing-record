@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 
 import { recordUuidSchema } from "@/schema/item-params";
+import RecordContainer from "@/view/record/record-container";
 
 const RecordItemPage = async ({ params }: { params: { itemId: string } }) => {
   const user = await auth();
@@ -16,9 +17,9 @@ const RecordItemPage = async ({ params }: { params: { itemId: string } }) => {
   }
   const recordUuid = validId.data;
 
-  // NOTE: select the data
+  // NOTE: select the data from db
 
-  return <section className="container mx-20">{recordUuid}</section>;
+  return <RecordContainer />;
 };
 
 export default RecordItemPage;

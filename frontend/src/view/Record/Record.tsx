@@ -149,7 +149,7 @@ const Record = (props: RecordProps) => {
     const formData = new FormData();
     formData.append("file", data.blob);
     try {
-      const response = await fetch("http://localhost:3001/audio", {
+      const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
