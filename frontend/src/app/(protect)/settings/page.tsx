@@ -1,19 +1,51 @@
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 
-const SettingPage = async () => {
+const SettingPage = () => {
+  const [file, setFile] = useState<File | null>(null);
+  const [caption, setCaption] = useState("");
+
+  const onSubmit = async (event: any) => {
+    if (!file) return;
+    event.preventDefault();
+
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("caption", caption);
+    await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+  };
+
+  useEffect(() => {
+    fetch("https://shadow-exercise.s3.ap-southeast-1.amazonaws.com/ap.jpeg", {
+      method: "GET",
+    });
+  }, []);
+
   return (
     <section className="container mx-auto px-20 py-10">
-      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut fugiat quia
-      tempore alias iusto dignissimos exercitationem possimus vitae doloremque
-      quod ullam maxime quos suscipit quae nisi aliquam illo soluta, obcaecati
-      libero, officia aliquid est tenetur placeat. Quis error harum accusantium,
-      sed ab modi placeat. Exercitationem similique ullam qui ut corrupti beatae
-      aut fugit vero doloribus dicta id magni animi quisquam repellat
-      laboriosam, nam architecto? Quisquam veritatis eum voluptate tempore ipsa,
-      architecto sint, nihil iste alias praesentium excepturi quas ut a!
-      Pariatur animi dolorem molestias, laboriosam aliquid aut deserunt
-      voluptatem magnam nesciunt ut ducimus molestiae a esse ullam! Repellat, ea
-      nesciunt.
+      <form onSubmit={onSubmit}>
+        <input
+          onChange={(e) => {
+            if (e.target.files) {
+              setFile(e.target.files[0]);
+            }
+          }}
+          type="file"
+          accept="image/*"
+          name="temp"
+          id="tmp"
+        />
+        <input
+          value={caption}
+          onChange={(e) => setCaption(e.target.value)}
+          type="text"
+          placeholder="Caption"
+        />
+        <button type="submit">Submit</button>
+      </form>
     </section>
   );
 };
