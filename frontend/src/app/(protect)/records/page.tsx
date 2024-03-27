@@ -3,7 +3,7 @@ import React from "react";
 
 const RecordPage = () => {
   return (
-    <section className="container mx-auto flex flex-col py-10 lg:flex-row lg:gap-x-6">
+    <section className="container mx-auto flex flex-col py-10">
       <RecordSearch />
     </section>
   );

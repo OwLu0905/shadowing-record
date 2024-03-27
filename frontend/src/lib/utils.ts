@@ -13,3 +13,9 @@ export function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
     reader.readAsArrayBuffer(blob);
   });
 }
+
+export function convertToYoutubeIdUrl(videoId: string) {
+  const videoUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+
+  return videoUrl;
+}
