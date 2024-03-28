@@ -5,10 +5,11 @@ import { cn } from "@/lib/utils";
 
 import Header from "@/components/layout/header/header";
 import Footer from "@/components/layout/footer/footer";
-
-import { ThemeProvider } from "@/components/layout/theme/theme-provider";
-import { Toaster } from "react-hot-toast";
 import SideNav from "@/components/layout/sidebar/side-nav";
+
+import { ThemeProvider } from "@/provider/theme-provider";
+import { QueryProvider } from "@/provider/queryProvider";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -30,25 +31,27 @@ export default function RootLayout({
           inter.variable,
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="flex flex-row">
-            <SideNav />
-            <div className="flex-grow overflow-hidden">
-              <Header />
-              <main className="mx-auto flex min-h-screen flex-col">
-                {children}
-              </main>
+        <QueryProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="flex flex-row">
+              <SideNav />
+              <div className="flex-grow overflow-hidden">
+                <Header />
+                <main className="mx-auto flex min-h-screen flex-col">
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
 
-          <Footer />
-          <Toaster />
-        </ThemeProvider>
+            <Footer />
+            <Toaster />
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );

@@ -15,7 +15,7 @@ export function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
 }
 
 export function convertToYoutubeIdUrl(videoId: string) {
-  const videoUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+  const videoUrl = `https://noembed.com/embed?format=json&url=https://www.youtube.com/watch?v=${videoId}`;
 
   return videoUrl;
 }

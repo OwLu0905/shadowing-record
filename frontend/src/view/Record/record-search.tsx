@@ -1,34 +1,38 @@
 "use client";
-import { EditorState } from "prosemirror-state";
-
-import { Schema } from "prosemirror-model";
-
-import {
-  ProseMirror,
-  useEditorEffect,
-  useEditorEventCallback,
-} from "@nytimes/react-prosemirror";
-import { RingLoader } from "react-spinners";
-
-import { useEffect, useRef, useState, useTransition } from "react";
-import { cn, convertToYoutubeIdUrl } from "@/lib/utils";
-import { CopyCheck, SendHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 import * as z from "zod";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
-const schema = new Schema({
-  nodes: {
-    text: {},
-    doc: { content: "text*" },
-  },
-});
+import { RingLoader } from "react-spinners";
+import { keymap } from "prosemirror-keymap";
+import { EditorState } from "prosemirror-state";
+import { ProseMirror } from "@nytimes/react-prosemirror";
+
+import { cn, convertToYoutubeIdUrl } from "@/lib/utils";
+import { SendHorizontal } from "lucide-react";
+
+import { useYtCheckMutation } from "@/api/youtube";
+
+import { shiftEnterKeyMap } from "@/view/record/search/keymap";
+import { editorStateSchema } from "@/view/record/search/editor-schema";
+import SearchInput from "@/view/record/search/search-input";
+import PasteButton from "@/view/record/search/paste-button";
+
+const shiftEnterPlugin = keymap(shiftEnterKeyMap);
 
 const RecordSearch = () => {
   const [mount, setMount] = useState<HTMLElement | null>(null);
+  const ytMutate = useYtCheckMutation();
 
+  const [isLoading, setIsLoading] = useState(false);
   const [line, setLineHeight] = useState(0);
-  const [state, setState] = useState(EditorState.create({ schema }));
+  const [state, setState] = useState(
+    EditorState.create({
+      schema: editorStateSchema,
+      plugins: [shiftEnterPlugin],
+    }),
+  );
 
   return (
     <>
@@ -42,29 +46,45 @@ const RecordSearch = () => {
           <RingLoader color="#9f0ff0" size={32} />
         </div>
         <ProseMirror
-          mount={mount}
+          mount={isLoading || ytMutate.isPending ? null : mount}
           state={state}
           dispatchTransaction={(tr) => {
             setState((s) => s.apply(tr));
           }}
         >
-          <SelectionWidget setMount={setMount} setLineHeight={setLineHeight} />
+          <SearchInput setMount={setMount} setLineHeight={setLineHeight} />
           <div className="flex shrink-0 items-center space-x-2">
             <PasteButton />{" "}
             <Button
               size="sm"
               variant={"ghost"}
-              onClick={() => {
+              onClick={async () => {
                 if (!mount?.innerHTML) return;
-                let url = new URL(mount.innerHTML);
+                // TODO: use zod url to check
+                const paragra = mount.children[0] as HTMLParagraphElement;
+
+                const checkUrlSchema = z.string().url();
+                const urlV = checkUrlSchema.safeParse(paragra.innerHTML);
+                if (!urlV.success) return;
+
+                let url = new URL(urlV.data);
                 const params = url.searchParams;
 
                 const youtubeSchema = z.string().regex(/^[a-zA-Z0-9_-]{11}$/);
-                const youtubeIdValid = youtubeSchema.safeParse(params);
+
+                const youtubeIdValid = youtubeSchema.safeParse(params.get("v"));
                 if (youtubeIdValid.success) {
                   const youtubeId = youtubeIdValid.data;
                   const validUrl = convertToYoutubeIdUrl(youtubeId);
-                  // TODO: fetch to check vedio
+
+                  const data = await ytMutate.mutateAsync(validUrl, {
+                    onSuccess(data, variables, context) {
+                      console.log(data);
+                    },
+                    onError(error, variables, context) {
+                      console.log(error);
+                    },
+                  });
                 }
               }}
             >
@@ -76,53 +96,5 @@ const RecordSearch = () => {
     </>
   );
 };
-
-function PasteButton() {
-  const onClick = useEditorEventCallback(async (view) => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (view && view.state && view.state.doc) {
-        const { from, to } = view.state.selection;
-        view.dispatch(view.state.tr.insertText(text, from, to));
-      }
-    } catch (err) {
-      console.error("Failed to read clipboard contents: ", err);
-    }
-  });
-
-  return (
-    <Button size="sm" variant={"secondary"} onClick={onClick}>
-      Paste
-      <CopyCheck className="ml-2 h-4 w-4" />
-    </Button>
-  );
-}
-
-function SelectionWidget({ setMount, setLineHeight }: any) {
-  const [emptyText, setEmptyText] = useState(true);
-
-  useEditorEffect((view) => {
-    const viewClientRect = view.dom.getBoundingClientRect();
-    const line = Math.floor(viewClientRect.height / 24);
-
-    setLineHeight(line);
-    const isEmpty = view.dom.childNodes[0].nodeType !== Node.TEXT_NODE;
-    setEmptyText(isEmpty);
-  });
-
-  return (
-    <p
-      ref={setMount}
-      tabIndex={0}
-      data-placeholder={!emptyText ? undefined : "enter your shadowing url"}
-      className={cn(
-        "mx-6 mb-auto mt-[5px] h-full min-w-[50%] flex-grow outline-0 focus:outline focus:outline-sky-400",
-        !emptyText
-          ? ""
-          : "before:float-left before:h-0 before:text-primary/80 before:content-[attr(data-placeholder)]",
-      )}
-    />
-  );
-}
 
 export default RecordSearch;
