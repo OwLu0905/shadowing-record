@@ -27,9 +27,10 @@ type RecordSearchProps = {
     string,
     unknown
   >;
+  setUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
 };
 const RecordSearch = (props: RecordSearchProps) => {
-  const { ytMutate } = props;
+  const { ytMutate, setUrl } = props;
   const [mount, setMount] = useState<HTMLElement | null>(null);
 
   const [line, setLineHeight] = useState(0);
@@ -44,7 +45,7 @@ const RecordSearch = (props: RecordSearchProps) => {
     <>
       <div
         className={cn(
-          "mx-auto flex w-full max-w-2xl items-start justify-between bg-secondary/50 p-4 px-6 transition-all duration-150 ease-in-out focus-within:bg-secondary/60 focus-within:shadow-sm focus-within:outline focus-within:outline-1  focus-within:outline-gray-300/80",
+          "mx-auto flex w-full max-w-2xl items-start justify-between bg-secondary/50 p-4 px-6 focus-within:bg-secondary/60 focus-within:shadow-sm focus-within:outline focus-within:outline-1 focus-within:outline-gray-300/80",
           line === 1 ? "rounded-2xl" : "rounded-xl",
         )}
       >
@@ -61,7 +62,12 @@ const RecordSearch = (props: RecordSearchProps) => {
           <SearchInput setMount={setMount} setLineHeight={setLineHeight} />
           <div className="flex shrink-0 items-center space-x-2">
             <PasteButton />{" "}
-            <SubmitButton mount={mount} state={state} ytMutate={ytMutate} />
+            <SubmitButton
+              mount={mount}
+              state={state}
+              ytMutate={ytMutate}
+              setUrl={setUrl}
+            />
           </div>
         </ProseMirror>
       </div>

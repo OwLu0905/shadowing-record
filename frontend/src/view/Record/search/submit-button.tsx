@@ -18,10 +18,12 @@ type SubmitButtonProps = {
     string,
     unknown
   >;
+
+  setUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
 };
 
 const SubmitButton = (props: SubmitButtonProps) => {
-  const { mount, state, ytMutate } = props;
+  const { mount, state, ytMutate, setUrl } = props;
 
   const onClick = useEditorEventCallback((view) => {
     const tr = state.tr.delete(0, state.doc.content.size);
@@ -58,6 +60,7 @@ const SubmitButton = (props: SubmitButtonProps) => {
 
           const data = await ytMutate.mutateAsync(validUrl, {
             onSuccess(data, variables, context) {
+              setUrl(url.toString());
               console.log(data);
               onClick();
             },
