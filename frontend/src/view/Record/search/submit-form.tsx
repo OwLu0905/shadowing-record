@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { YoutubeOEmbedResponse } from "@/api/youtube";
 import { Button } from "@/components/ui/button";
 import { SparkleIcon } from "lucide-react";
+import { ShadowingType, ShadowingTypeMap } from "@/type/kinds";
 
 type SubmitForm = {
   data: YoutubeOEmbedResponse;

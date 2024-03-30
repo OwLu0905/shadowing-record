@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "db:generate": "drizzle-kit generate:pg",
-    "db:push": "drizzle-kit push:pg"
+    "db:push": "drizzle-kit push:pg",
+    "db:seed": "bun ./src/script/seed.ts",
+    "db:migrate": "bun ./src/script/migrate.ts"
   },
   "dependencies": {
     "@auth/core": "^0.28.0",
@@ -28,6 +30,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.3.1",
+    "dotenv": "^16.4.5",
     "drizzle-orm": "^0.29.4",
     "formidable": "^3.5.1",
     "lucide-react": "^0.312.0",

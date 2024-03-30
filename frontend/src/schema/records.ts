@@ -5,7 +5,7 @@ export const NewRecordFormSchema = z.object({
   title: z.string().min(1, { message: "required" }),
   description: z.string().min(1, { message: "required" }),
   shadowingUrl: z.string().min(1, { message: "required" }),
-  shadowingType: z.string().min(1, { message: "required" }),
+  shadowingType: z.number().min(1, { message: "required" }),
 });
 
 export const NewRecordSchema = z.object({
@@ -13,5 +13,5 @@ export const NewRecordSchema = z.object({
   title: z.string().min(1, { message: "required" }),
   description: z.string().min(1, { message: "required" }),
   shadowingUrl: z.string().min(1, { message: "required" }),
-  shadowingType: z.string().min(1, { message: "required" }),
+  shadowingType: z.number().min(1, { message: "required" }),
 });

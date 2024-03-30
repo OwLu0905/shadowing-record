@@ -3,8 +3,8 @@ import NextAuth from "next-auth";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 
 import authConfig from "@/lib/auth.config";
-import { db } from "@/lib/db";
-import { getUserById } from "@/data/user";
+import { db } from "@/db/drizzle";
+import { getUserById } from "@/db/user";
 
 export const {
   handlers: { GET, POST },
