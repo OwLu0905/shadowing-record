@@ -8,6 +8,7 @@ import Record from "@/view/record/Record";
 import useRecordMedia from "@/hooks/useRecordMedia";
 import WarningDialog from "@/components/common/warn-dialog";
 import History from "./History";
+import { useForm } from "react-hook-form";
 
 type RecordContainerProps = {
   recordInfo:
@@ -23,9 +24,21 @@ type RecordContainerProps = {
     | null;
 };
 
+export type AudioSubmitForm = {
+  start: string;
+  end: string;
+};
+
 const RecordContainer = (props: RecordContainerProps) => {
   const { recordInfo } = props;
   const { data, state, utils } = useRecordMedia();
+  const forms = useForm<AudioSubmitForm>({
+    defaultValues: {
+      start: "",
+      end: "",
+    },
+  });
+
   const playerRef = useRef<ReactPlayer>(null);
 
   const [sliderValue, setSliderValue] = useState<[start: number, end: number]>([
@@ -76,6 +89,9 @@ const RecordContainer = (props: RecordContainerProps) => {
   function onSyncStop() {
     utils.stop();
     setPlaying(false);
+
+    forms.setValue("start", sliderValue[0].toString());
+    forms.setValue("end", sliderValue[1].toString());
   }
 
   if (!recordInfo) return <></>;
@@ -98,6 +114,7 @@ const RecordContainer = (props: RecordContainerProps) => {
             onSyncResume={onSyncResume}
             onSyncPause={onSyncPause}
             onSyncStop={onSyncStop}
+            forms={forms}
           />
         </div>
         <div className="flex w-full flex-col gap-4 lg:w-1/2">
@@ -107,6 +124,7 @@ const RecordContainer = (props: RecordContainerProps) => {
             data={data}
             state={state}
             utils={utils}
+            forms={forms}
           />
         </div>
       </section>

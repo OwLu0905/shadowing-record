@@ -3,13 +3,25 @@ import React, { useEffect, useRef, useState } from "react";
 
 import useAudioWaveform from "@/hooks/useAudioWaveform";
 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormLabel,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
-import { Mic, Pause, StepForward, StopCircle, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { throttle } from "@/util/throttle";
 import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
+import { UseFormReturn } from "react-hook-form";
+import { AudioSubmitForm } from "./record-container";
+import { format } from "date-fns/format";
 
 type RecordProps = {
   data: {
@@ -29,11 +41,12 @@ type RecordProps = {
     disconnect: () => void;
     cleanup: () => void;
   };
+  forms: UseFormReturn<AudioSubmitForm, any, undefined>;
 };
 
 const Record = (props: RecordProps) => {
   // NOTE: audio
-  const { data, state, utils } = props;
+  const { data, state, utils, forms } = props;
   const blobData = data.blob;
   const mediaState = state.mediaState;
   const isRecording = mediaState === "recording" || mediaState === "paused";
@@ -313,8 +326,8 @@ const Record = (props: RecordProps) => {
     );
 
   return (
-    <>
-      <div className="flex flex-grow flex-col">
+    <Form {...forms}>
+      <form className="flex flex-grow flex-col">
         <Button
           data-recording={!!blobData}
           className="mb-4 self-end data-[recording=true]:visible data-[recording=false]:invisible"
@@ -325,6 +338,7 @@ const Record = (props: RecordProps) => {
             }
             cleanup();
             clearnAudioWave();
+            forms.reset();
             if (requestIdRef.current) {
               cancelAnimationFrame(requestIdRef.current);
             }
@@ -415,11 +429,56 @@ const Record = (props: RecordProps) => {
           </div>
         </div>
 
-        <Button className="w-fit self-end" onClick={saveAudioToFile}>
+        <div className="mb-4 flex flex-row items-center gap-x-4">
+          <FormField
+            control={forms.control}
+            name="start"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Start Time (sec)</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={format(+field.value * 1000, "mm:ss")}
+                    placeholder="type"
+                    readOnly={true}
+                    disabled={true}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={forms.control}
+            name="end"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>End Time (sec)</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={format(+field.value * 1000, "mm:ss")}
+                    placeholder="type"
+                    readOnly={true}
+                    disabled={true}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <Button
+          className="w-fit self-end"
+          onClick={saveAudioToFile}
+          disabled={!audioBuffer}
+        >
           Save
         </Button>
-      </div>
-    </>
+      </form>
+    </Form>
   );
 };
 

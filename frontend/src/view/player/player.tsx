@@ -16,6 +16,8 @@ import { SliderWithLabel } from "@/components/custom/ui/slider";
 import PlayerActions from "@/view/player/player-actions";
 
 import { MicIcon, Pause, Pencil, StepForward, StopCircle } from "lucide-react";
+import { UseFormReturn } from "react-hook-form";
+import { AudioSubmitForm } from "../record/record-container";
 
 type SliderState = [start: number, end: number];
 
@@ -31,11 +33,12 @@ type PlayerProps = {
 
   sliderValue: SliderState;
   setSliderValue: React.Dispatch<React.SetStateAction<SliderState>>;
+  mediaState: RecordingState;
   onSyncRecord: (sync: boolean) => Promise<void>;
   onSyncResume: () => void;
   onSyncPause: () => void;
   onSyncStop: () => void;
-  mediaState: RecordingState;
+  forms: UseFormReturn<AudioSubmitForm, any, undefined>;
 };
 
 const Player = (props: PlayerProps) => {
@@ -48,11 +51,12 @@ const Player = (props: PlayerProps) => {
     setHasWindow,
     sliderValue,
     setSliderValue,
+    mediaState,
     onSyncRecord,
     onSyncResume,
     onSyncPause,
     onSyncStop,
-    mediaState,
+    forms,
   } = props;
 
   const isRecording = mediaState === "recording" || mediaState === "paused";
@@ -82,6 +86,8 @@ const Player = (props: PlayerProps) => {
   }
 
   function calculateDuration(e: ReactPlayer) {
+    forms.setValue("start", "0");
+    forms.setValue("end", e.getDuration().toString());
     setSliderValue([0, e.getDuration()]);
   }
 
