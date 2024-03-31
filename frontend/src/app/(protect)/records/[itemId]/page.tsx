@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 
 import { recordUuidSchema } from "@/schema/item-params";
+import { getRecordById } from "@/db/record";
+
 import RecordContainer from "@/view/record/record-container";
 
 const RecordItemPage = async ({ params }: { params: { itemId: string } }) => {
@@ -12,14 +14,17 @@ const RecordItemPage = async ({ params }: { params: { itemId: string } }) => {
 
   const itemId = params.itemId;
   const validId = recordUuidSchema.safeParse(itemId);
+
   if (!validId.success) {
     return <section className="container mx-20">Page Not Found!! :(</section>;
   }
   const recordUuid = validId.data;
 
+  const data = await getRecordById(recordUuid);
+
   // NOTE: select the data from db
 
-  return <RecordContainer />;
+  return <RecordContainer recordInfo={data} />;
 };
 
 export default RecordItemPage;

@@ -9,7 +9,22 @@ import useRecordMedia from "@/hooks/useRecordMedia";
 import WarningDialog from "@/components/common/warn-dialog";
 import History from "./History";
 
-const RecordContainer = () => {
+type RecordContainerProps = {
+  recordInfo:
+    | {
+        title: string;
+        description: string | null;
+        shadowingUrl: string;
+        shadowingType: number;
+        userId: string;
+        recordId: string;
+        createdAt: Date;
+      }[]
+    | null;
+};
+
+const RecordContainer = (props: RecordContainerProps) => {
+  const { recordInfo } = props;
   const { data, state, utils } = useRecordMedia();
   const playerRef = useRef<ReactPlayer>(null);
 
@@ -63,11 +78,14 @@ const RecordContainer = () => {
     setPlaying(false);
   }
 
+  if (!recordInfo) return <></>;
+
   return (
     <>
       <section className="container mx-auto flex flex-col py-10 lg:flex-row lg:gap-x-6">
         <div className="w-full lg:w-1/2">
           <Player
+            url={recordInfo[0].shadowingUrl}
             playerRef={playerRef}
             playing={playing}
             setPlaying={setPlaying}

@@ -7,8 +7,10 @@ import GuestHeader from "@/components/layout/header/guest-header";
 
 import { MenuIcon } from "lucide-react";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { auth } from "@/lib/auth";
 
 const Header = async () => {
+  const session = await auth();
   return (
     <header className="flex h-14 w-full items-center gap-4 bg-background py-8 pr-10 shadow-sm shadow-accent md:pl-10 md:pr-10">
       <Drawer direction="left">
@@ -26,7 +28,7 @@ const Header = async () => {
       </Link>
       <div className="w-full flex-1"></div>
       <ToggleTheme />
-      {false ? <AuthHeader /> : <GuestHeader />}
+      {session ? <AuthHeader /> : <GuestHeader />}
     </header>
   );
 };

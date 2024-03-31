@@ -17,11 +17,10 @@ import PlayerActions from "@/view/player/player-actions";
 
 import { MicIcon, Pause, Pencil, StepForward, StopCircle } from "lucide-react";
 
-const outurl = "https://www.youtube.com/embed/u-ol2tpgVYI";
-
 type SliderState = [start: number, end: number];
 
 type PlayerProps = {
+  url: string;
   playerRef: React.RefObject<ReactPlayer>;
 
   playing: boolean;
@@ -41,6 +40,7 @@ type PlayerProps = {
 
 const Player = (props: PlayerProps) => {
   const {
+    url,
     playerRef,
     playing,
     setPlaying,
@@ -105,7 +105,7 @@ const Player = (props: PlayerProps) => {
               height="240px"
               controls={true}
               ref={playerRef}
-              url={outurl}
+              url={url}
               playing={playing}
               onPlay={startPlaying}
               onReady={calculateDuration}

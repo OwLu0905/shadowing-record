@@ -1,6 +1,9 @@
-import React from "react";
+"use client";
+import React, { useTransition } from "react";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
+
+import { useSession } from "next-auth/react";
 
 import {
   Form,
@@ -17,7 +20,8 @@ import { Input } from "@/components/ui/input";
 import { YoutubeOEmbedResponse } from "@/api/youtube";
 import { Button } from "@/components/ui/button";
 import { SparkleIcon } from "lucide-react";
-import { ShadowingType, ShadowingTypeMap } from "@/type/kinds";
+import { createRecord } from "@/db/record";
+import { ShadowingTypeMap } from "@/type/kinds";
 
 type SubmitForm = {
   data: YoutubeOEmbedResponse;
@@ -25,6 +29,9 @@ type SubmitForm = {
 };
 const SubmitForm = (props: SubmitForm) => {
   const { data, url } = props;
+  const session = useSession();
+  const user = session.data?.user;
+  const [isPending, startTransition] = useTransition();
 
   const forms = useForm<z.infer<typeof NewRecordFormSchema>>({
     resolver: zodResolver(NewRecordFormSchema),
@@ -42,8 +49,16 @@ const SubmitForm = (props: SubmitForm) => {
     },
   });
 
-  function onSubmit(data: z.infer<typeof NewRecordFormSchema>) {
-    console.log(data);
+  async function onSubmit(data: z.infer<typeof NewRecordFormSchema>) {
+    const type = ShadowingTypeMap[data.shadowingType];
+    startTransition(() => {
+      if (!user?.id) return;
+      createRecord({
+        ...data,
+        shadowingType: type,
+        userId: user.id,
+      });
+    });
   }
 
   return (
@@ -115,7 +130,7 @@ const SubmitForm = (props: SubmitForm) => {
           )}
         />
 
-        <Button size="sm" className="float-end">
+        <Button size="sm" className="float-end" disabled={isPending}>
           Start Exercising <SparkleIcon className="ml-2 h-4 w-4" />
         </Button>
       </form>

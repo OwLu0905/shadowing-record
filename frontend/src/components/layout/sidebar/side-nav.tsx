@@ -1,16 +1,21 @@
 "use client";
+import useRecordListsQuery from "@/api/record/useRecordLists";
 import { Button } from "@/components/ui/button";
 import useToggleSidebar from "@/hooks/useToggleSidebar";
 import { MenuIcon, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { v4 as uuid } from "uuid";
 
-const SideNav = () => {
+type SideNavProps = {
+  userId: string;
+};
+
+const SideNav = ({ userId }: SideNavProps) => {
   // NOTE: use useSyncExternalStore to store in localstorage
   const [open, setOpen] = useToggleSidebar("SidebarToggle");
   const [isMount, setMount] = useState(false);
+  const { data: recordLists, isLoading } = useRecordListsQuery(userId);
 
   const router = useRouter();
 
@@ -46,31 +51,15 @@ const SideNav = () => {
         className="mx-6 flex flex-col items-start gap-y-2 transition-opacity duration-300 ease-in data-[expand=true]:visible data-[expand=false]:invisible data-[expand=false]:opacity-0 data-[expand=true]:opacity-100"
         data-expand={open}
       >
-        <li className="w-full truncate">
-          <Button variant={"link"} asChild>
-            <Link href={`/records/${uuid()}`}>
-              dolore doloribus ducimus minus laudantium impedit quam omnis a
-              eius dicta, nesciunt repudiandae necessitatibus quos autem illum
-              nam?
-            </Link>
-          </Button>
-        </li>
-
-        <li className="w-full truncate">
-          <Button variant={"link"} asChild>
-            <Link href={`/records/${uuid()}`}>
-              eius dicta, nesciunt repudiandae necessitatibus quos autem illum
-            </Link>
-          </Button>
-        </li>
-
-        <li className="w-full truncate">
-          <Button variant={"link"} asChild>
-            <Link href={`/records/${uuid()}`}>
-              eius dicta, nesciunt repudiandae necessitatibus quos autem illum
-            </Link>
-          </Button>
-        </li>
+        {recordLists?.map((i) => {
+          return (
+            <li key={i.recordId} className="w-full truncate">
+              <Button variant={"link"} asChild>
+                <Link href={`/records/${i.recordId}`}>{i.title}</Link>
+              </Button>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
