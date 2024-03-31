@@ -1,15 +1,15 @@
-import type { Config } from "tailwindcss"
-const { fontFamily } = require("tailwindcss/defaultTheme")
+import type { Config } from "tailwindcss";
+const { fontFamily } = require("tailwindcss/defaultTheme");
 
 const config = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './view/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-	],
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./view/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -20,6 +20,10 @@ const config = {
       },
     },
     extend: {
+      width: {
+        "sidebar-open": "18rem",
+        "sidebar-close": "4rem",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -69,22 +73,22 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "spark" : {
-          "0%, 100%": {opacity: "0"},
-          "50%": {opacity: "100%"},
-        }
+        spark: {
+          "0%, 100%": { opacity: "0" },
+          "50%": { opacity: "100%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "sparkup": "spark 2s ease-in-out infinite",
+        sparkup: "spark 2s ease-in-out infinite",
       },
-  fontFamily: {
+      fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config
+} satisfies Config;
 
-export default config
+export default config;

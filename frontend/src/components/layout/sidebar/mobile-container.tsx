@@ -7,8 +7,9 @@ import {
 } from "@tanstack/react-query";
 import { auth } from "@/lib/auth";
 import { getRecordByUserId } from "@/db/record";
+import MobileNav from "./mobile-nav";
 
-const SidebarContainer = async () => {
+const MobileNavContainer = async () => {
   const queryClient = new QueryClient();
   const session = await auth();
 
@@ -23,9 +24,9 @@ const SidebarContainer = async () => {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <SideNav userId={session.user.id} />
+      <MobileNav userId={session.user.id} />
     </HydrationBoundary>
   );
 };
 
-export default SidebarContainer;
+export default MobileNavContainer;

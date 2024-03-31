@@ -14,20 +14,13 @@ type SideNavProps = {
 const SideNav = ({ userId }: SideNavProps) => {
   // NOTE: use useSyncExternalStore to store in localstorage
   const [open, setOpen] = useToggleSidebar("SidebarToggle");
-  const [isMount, setMount] = useState(false);
   const { data: recordLists, isLoading } = useRecordListsQuery(userId);
 
   const router = useRouter();
 
-  useEffect(() => {
-    setMount(true);
-  }, []);
-
-  if (!isMount) return <></>;
-
   return (
     <div
-      className="hidden flex-[0_0_auto] flex-col bg-gradient-to-b from-secondary via-secondary/60 to-secondary  transition-all duration-300 ease-in-out data-[expand=false]:w-[60px] data-[expand=true]:w-60 md:flex"
+      className="hidden flex-[0_0_auto] flex-col bg-gradient-to-b from-secondary via-secondary/60 to-secondary  transition-all duration-300 ease-in-out data-[expand=false]:w-sidebar-close data-[expand=true]:w-sidebar-open md:flex"
       data-expand={open}
     >
       <Button

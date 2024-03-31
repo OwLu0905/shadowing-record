@@ -61,7 +61,6 @@ const SubmitButton = (props: SubmitButtonProps) => {
           const data = await ytMutate.mutateAsync(validUrl, {
             onSuccess(data, variables, context) {
               setUrl(url.toString());
-              console.log(data);
               onClick();
             },
             onError(error, variables, context) {

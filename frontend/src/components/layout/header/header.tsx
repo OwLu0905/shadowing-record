@@ -8,6 +8,8 @@ import GuestHeader from "@/components/layout/header/guest-header";
 import { MenuIcon } from "lucide-react";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { auth } from "@/lib/auth";
+import SidebarContainer from "../sidebar/side-container";
+import MobileNavContainer from "../sidebar/mobile-container";
 
 const Header = async () => {
   const session = await auth();
@@ -18,7 +20,7 @@ const Header = async () => {
           <MenuIcon className="h-5 w-5" />
         </DrawerTrigger>
         <DrawerContent className="fixed bottom-0 right-0 mt-24 flex h-full w-[400px] flex-col rounded-t-[0px] bg-background">
-          Pending........
+          <MobileNavContainer />
         </DrawerContent>
       </Drawer>
       <Link href="/">

@@ -45,13 +45,13 @@ const RecordSearch = (props: RecordSearchProps) => {
     <>
       <div
         className={cn(
-          "mx-auto flex w-full max-w-2xl items-start justify-between bg-secondary/50 p-4 px-6 focus-within:bg-secondary/60 focus-within:shadow-sm focus-within:outline focus-within:outline-1 focus-within:outline-gray-300/80",
-          line === 1 ? "rounded-2xl" : "rounded-xl",
+          "mx-auto flex w-full max-w-2xl flex-col items-start justify-between gap-4 bg-secondary/50 py-4 focus-within:bg-secondary/60 focus-within:shadow-sm focus-within:outline focus-within:outline-1 focus-within:outline-gray-300/80 md:flex-row",
+          line === 1 ? "rounded-xl" : "rounded-2xl",
         )}
       >
-        <div className="shrink-0">
+        {/** <div className="shrink-0">
           <RingLoader color="#9f0ff0" size={32} />
-        </div>
+        </div> */}
         <ProseMirror
           mount={ytMutate.isPending ? null : mount}
           state={state}
@@ -60,8 +60,8 @@ const RecordSearch = (props: RecordSearchProps) => {
           }}
         >
           <SearchInput setMount={setMount} setLineHeight={setLineHeight} />
-          <div className="flex shrink-0 items-center space-x-2">
-            <PasteButton />{" "}
+          <div className="flex shrink-0 items-center gap-2 self-end pr-4">
+            <PasteButton />
             <SubmitButton
               mount={mount}
               state={state}

@@ -18,8 +18,8 @@ const PasteButton = () => {
 
   return (
     <Button size="sm" variant={"secondary"} onClick={onClick}>
-      Paste
-      <CopyCheck className="ml-2 h-4 w-4" />
+      <span className="hidden md:inline">Paste</span>
+      <CopyCheck className="h-4 w-4 md:ml-2" />
     </Button>
   );
 };

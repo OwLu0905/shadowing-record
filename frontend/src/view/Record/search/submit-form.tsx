@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { SparkleIcon } from "lucide-react";
 import { createRecord } from "@/db/record";
 import { ShadowingTypeMap } from "@/type/kinds";
+import { useQueryClient } from "@tanstack/react-query";
 
 type SubmitForm = {
   data: YoutubeOEmbedResponse;
@@ -32,6 +33,7 @@ const SubmitForm = (props: SubmitForm) => {
   const session = useSession();
   const user = session.data?.user;
   const [isPending, startTransition] = useTransition();
+  const queryClient = useQueryClient();
 
   const forms = useForm<z.infer<typeof NewRecordFormSchema>>({
     resolver: zodResolver(NewRecordFormSchema),
@@ -58,12 +60,17 @@ const SubmitForm = (props: SubmitForm) => {
         shadowingType: type,
         userId: user.id,
       });
+      queryClient.invalidateQueries({ queryKey: ["records"] });
+      console.log("invalidateQueries");
     });
   }
 
   return (
     <Form {...forms}>
-      <form className="space-y-6" onSubmit={forms.handleSubmit(onSubmit)}>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={forms.handleSubmit(onSubmit)}
+      >
         <FormField
           control={forms.control}
           name="title"
@@ -130,7 +137,11 @@ const SubmitForm = (props: SubmitForm) => {
           )}
         />
 
-        <Button size="sm" className="float-end" disabled={isPending}>
+        <Button
+          size="sm"
+          className="w-full self-end md:w-fit"
+          disabled={isPending}
+        >
           Start Exercising <SparkleIcon className="ml-2 h-4 w-4" />
         </Button>
       </form>

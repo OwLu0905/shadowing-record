@@ -1,12 +1,11 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
-import { useForm } from "react-hook-form";
-
 import { ClimbingBoxLoader } from "react-spinners";
 
 import { YoutubeOEmbedResponse } from "@/api/youtube";
 import SubmitForm from "@/view/record/search/submit-form";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type PreviewVideoProps = {
   data: YoutubeOEmbedResponse | undefined;
@@ -15,7 +14,6 @@ type PreviewVideoProps = {
 
 const PreviewVideo = (props: PreviewVideoProps) => {
   const { data, url } = props;
-  const forms = useForm();
   const [hasWindow, setHasWindow] = useState(false);
 
   useEffect(() => {
@@ -25,7 +23,11 @@ const PreviewVideo = (props: PreviewVideoProps) => {
   }, [setHasWindow]);
 
   if (!data || !url)
-    return <div className="mx-auto mb-4 w-full max-w-xl">Empty </div>;
+    return (
+      <div className="mx-auto mb-4 w-full max-w-xl">
+        <Skeleton className="h-60 w-full" />
+      </div>
+    );
 
   if (!hasWindow)
     return (
@@ -37,8 +39,8 @@ const PreviewVideo = (props: PreviewVideoProps) => {
     <div className="mx-auto mb-4 w-full max-w-screen-lg">
       <h2 className="mb-4 block text-xl font-semibold">{data.title}</h2>
 
-      <div className="flex items-start gap-x-6 py-4">
-        <div className="w-1/2">
+      <div className="flex flex-col items-start gap-8 py-4 md:flex-row">
+        <div className="w-full md:w-1/2">
           {hasWindow && (
             <ReactPlayer
               width="100%"
@@ -49,7 +51,7 @@ const PreviewVideo = (props: PreviewVideoProps) => {
           )}
         </div>
 
-        <div className="w-1/2">
+        <div className="w-full md:w-1/2">
           <SubmitForm data={data} url={url} />
         </div>
       </div>
