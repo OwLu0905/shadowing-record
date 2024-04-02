@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
 
 import Player from "@/view/player/player";
@@ -139,9 +139,6 @@ const RecordContainer = (props: RecordContainerProps) => {
         description="You have unsaved changes. Do you want to continue editing or discard the changes and start new?"
         onConfirm={onConfirmSyncRecord}
       />
-      <section className="container mx-auto flex flex-col">
-        <History />
-      </section>
     </>
   );
 };

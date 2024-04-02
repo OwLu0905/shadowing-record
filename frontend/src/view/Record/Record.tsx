@@ -23,6 +23,7 @@ import { UseFormReturn } from "react-hook-form";
 import { AudioSubmitForm } from "./record-container";
 import { format } from "date-fns/format";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 type RecordProps = {
   data: {
@@ -65,7 +66,6 @@ const Record = (props: RecordProps) => {
   const isAvailable = state.deviceState;
 
   const { cleanup } = utils;
-  console.log(startTime, endTime);
 
   // NOTE: Draw canvas
   const containerRef = useRef<HTMLDivElement>(null);
@@ -177,11 +177,13 @@ const Record = (props: RecordProps) => {
   ) {
     e.preventDefault();
     if (!data.blob) return;
+
     const formData = new FormData();
     formData.append("file", data.blob);
     formData.append("recordId", recordInfo[0].recordId);
     formData.append("startTime", `${startTime}`);
     formData.append("endTime", `${endTime}`);
+
     try {
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -189,9 +191,18 @@ const Record = (props: RecordProps) => {
       });
 
       if (response.ok) {
-        alert("Audio uploaded successfully");
+        if (sourceRef.current) {
+          sourceRef.current.stop();
+        }
+        cleanup();
+        clearnAudioWave();
+        forms.reset();
+        if (requestIdRef.current) {
+          cancelAnimationFrame(requestIdRef.current);
+        }
+        toast.success("Audio uploaded successfully");
       } else {
-        alert("Error uploading audio");
+        toast.error("Error uploading audio");
       }
     } catch (error) {
       console.error("Error uploading audio:", error);

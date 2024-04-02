@@ -8,7 +8,13 @@ import { db } from "@/db/drizzle";
 import { audios, records } from "@/db/schema/schema";
 import { recordUuidSchema } from "@/schema/item-params";
 import { NewAudioSchema, NewRecordSchema } from "@/schema/records";
-import { throws } from "assert";
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import { EnvParseConfig } from "@/util/env.schema";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 // NOTE: Create
 export const createRecord = async (data: z.infer<typeof NewRecordSchema>) => {
@@ -93,7 +99,7 @@ export const createAudio = async (data: z.infer<typeof NewAudioSchema>) => {
     throw error;
   }
 
-  revalidatePath("/records");
+  revalidatePath(`/records/${data.recordId}`);
 };
 
 export const getAudiosById = async (recordId: string) => {
@@ -103,11 +109,37 @@ export const getAudiosById = async (recordId: string) => {
       throw new Error("invalid audios data");
     }
 
-    return await db
+    const data = await db
       .select()
       .from(audios)
       .where(eq(audios.recordId, recordId))
       .orderBy(desc(audios.createdAt));
+
+    const s3 = new S3Client({
+      credentials: {
+        accessKeyId: EnvParseConfig.AWS_ACCESS_KEY_ID,
+        secretAccessKey: EnvParseConfig.AWS_SECRET_ACCESS_KEY,
+      },
+      region: EnvParseConfig.BUCKET_REGION,
+    });
+
+    const getPresignedUrl = async (audioUrl: string) => {
+      const command = new GetObjectCommand({
+        Bucket: EnvParseConfig.BUCKET_NAME,
+        Key: `${recordId}/${audioUrl}`,
+      });
+      return getSignedUrl(s3, command, { expiresIn: 3600 });
+    };
+
+    const presignedUrls = await Promise.all(
+      data.map((audio) => getPresignedUrl(audio.audioUrl)),
+    );
+
+    const newData = data.map((audio, index) => ({
+      ...audio,
+      audioUrl: presignedUrls[index],
+    }));
+    return newData;
   } catch (err) {
     console.log(err, "cant get audios");
 

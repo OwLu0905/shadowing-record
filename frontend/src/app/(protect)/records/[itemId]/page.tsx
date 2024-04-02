@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 
@@ -6,6 +6,7 @@ import { recordUuidSchema } from "@/schema/item-params";
 import { getRecordById } from "@/db/record";
 
 import RecordContainer from "@/view/record/record-container";
+import History from "@/view/record/History";
 
 const RecordItemPage = async ({ params }: { params: { itemId: string } }) => {
   const user = await auth();
@@ -23,8 +24,19 @@ const RecordItemPage = async ({ params }: { params: { itemId: string } }) => {
   const data = await getRecordById(recordUuid);
 
   // NOTE: select the data from db
+  //
+  if (!data) return <></>;
 
-  return <RecordContainer recordInfo={data} />;
+  return (
+    <>
+      <RecordContainer recordInfo={data} />
+      <section className="container mx-auto flex flex-col">
+        <Suspense fallback={<>loading...</>}>
+          <History recordId={data[0].recordId} />
+        </Suspense>
+      </section>
+    </>
+  );
 };
 
 export default RecordItemPage;

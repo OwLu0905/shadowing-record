@@ -49,9 +49,11 @@ export async function POST(req: NextRequest) {
       .replace(/[-:.]/g, "")
       .slice(0, 15);
 
+    const saveUuid = uuid();
+    const filename = `${formattedTimestamp}_${saveUuid}`;
     const params: PutObjectCommandInput = {
       Bucket: EnvParseConfig.BUCKET_NAME,
-      Key: `${recordId}/${formattedTimestamp}_${uuid()}`,
+      Key: `${recordId}/${filename}`,
       Body: buffer,
       ContentType: fileType,
     };
@@ -64,7 +66,7 @@ export async function POST(req: NextRequest) {
     await createAudio({
       userId: userId,
       recordId: recordIdValid.data,
-      audioUrl: params.Key as string,
+      audioUrl: `${filename}` as string,
       startSeconds: startTime,
       endSeconds: endTime,
     });

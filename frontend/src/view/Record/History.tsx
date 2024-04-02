@@ -10,7 +10,19 @@ import {
   Table,
 } from "@/components/ui/table";
 
-const History = () => {
+import { getAudiosById } from "@/db/record";
+
+type HistoryProps = {
+  recordId: string;
+};
+
+const History = async (props: HistoryProps) => {
+  const { recordId } = props;
+
+  const data = await getAudiosById(recordId);
+
+  if (!data) return <></>;
+
   return (
     <div>
       <h2 className="text-lg font-semibold md:text-2xl">Recording History</h2>
@@ -18,61 +30,39 @@ const History = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[80px]">Date</TableHead>
-              <TableHead className="max-w-[150px]">Topic</TableHead>
-              <TableHead className="md:table-cell">Duration</TableHead>
-              <TableHead className="w-[50%]">Waveform</TableHead>
+              <TableHead className="w-1/3">Date</TableHead>
+              <TableHead className="max-w-[150px]">start</TableHead>
+              <TableHead className="md:table-cell">end</TableHead>
+              <TableHead className="w-1/3">Waveform</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell>Feb 6, 2024</TableCell>
-              <TableCell>Meeting with team</TableCell>
-              <TableCell className="md:table-cell">1h 30m</TableCell>
-              <TableCell>
-                <div className="h-6 w-full bg-gray-200" />
-              </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button className="h-8 w-8 rounded-full">2</Button>
-                  <Button className="h-8 w-8 rounded-full">3</Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-          <TableBody>
-            <TableRow>
-              <TableCell>Feb 6, 2024</TableCell>
-              <TableCell>Meeting with team</TableCell>
-              <TableCell className="md:table-cell">1h 30m</TableCell>
-              <TableCell>
-                <div className="h-6 w-full bg-gray-200" />
-              </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button className="h-8 w-8 rounded-full">2</Button>
-                  <Button className="h-8 w-8 rounded-full">3</Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-          <TableBody>
-            <TableRow>
-              <TableCell>Feb 6, 2024</TableCell>
-              <TableCell>Meeting with team</TableCell>
-              <TableCell className="md:table-cell">1h 30m</TableCell>
-              <TableCell>
-                <div className="h-6 w-full bg-gray-200" />
-              </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button className="h-8 w-8 rounded-full">2</Button>
-                  <Button className="h-8 w-8 rounded-full">3</Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          </TableBody>
+          {data.map((item) => {
+            return (
+              <TableBody key={item.audioUrl}>
+                <TableRow>
+                  <TableCell>{new Date(item.createdAt).toString()}</TableCell>
+                  <TableCell>{item.startSeconds}</TableCell>
+                  <TableCell className="md:table-cell">
+                    {item.endSeconds}
+                  </TableCell>
+                  <TableCell>
+                    <div className="my-6 flex h-6 w-full items-center">
+                      <audio controls>
+                        <source src={`${item.audioUrl}`} type="audio/webm" />
+                      </audio>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button className="h-8 w-8 rounded-full">2</Button>
+                      <Button className="h-8 w-8 rounded-full">3</Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            );
+          })}
         </Table>
       </div>
     </div>
