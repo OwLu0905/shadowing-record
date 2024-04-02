@@ -18,8 +18,8 @@ export const NewRecordSchema = z.object({
 
 export const NewAudioSchema = z.object({
   userId: recordUuidSchema,
-  title: z.string().min(1, { message: "required" }),
-  description: z.string().min(1, { message: "required" }),
-  shadowingUrl: z.string().min(1, { message: "required" }),
-  shadowingType: z.number().min(1, { message: "required" }),
+  recordId: recordUuidSchema,
+  audioUrl: z.string().min(1),
+  startSeconds: z.string(),
+  endSeconds: z.string(),
 });

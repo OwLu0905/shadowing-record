@@ -70,22 +70,30 @@ export const getRecordById = async (id: string) => {
 
 // NOTE: Create
 export const createAudio = async (data: z.infer<typeof NewAudioSchema>) => {
-  let recordId: string | undefined = undefined;
   try {
-    const result = await db
-      .insert(records)
-      .values(data)
-      .returning({ recordId: records.recordId });
+    const validSec = z.preprocess(
+      (value) => (value === null ? NaN : Number(value)),
+      z.number().refine((value) => !isNaN(value), {
+        message: "Invalid number",
+      }),
+    );
+    const startSchema = validSec.safeParse(data.startSeconds);
+    const endSchema = validSec.safeParse(data.endSeconds);
 
-    recordId = result[0].recordId;
+    if (startSchema.success && endSchema.success) {
+      await db.insert(audios).values({
+        ...data,
+        startSeconds: startSchema.data,
+        endSeconds: endSchema.data,
+      });
+    } else {
+      throw new Error("invalid start or end time");
+    }
   } catch (error) {
     throw error;
   }
 
-  if (recordId) {
-    revalidatePath("/records");
-    redirect(`/records/${recordId}`);
-  }
+  revalidatePath("/records");
 };
 
 export const getAudiosById = async (recordId: string) => {

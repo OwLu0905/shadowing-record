@@ -1,31 +1,35 @@
+import { NextRequest } from "next/server";
 import {
   PutObjectCommand,
   type PutObjectCommandInput,
   S3Client,
 } from "@aws-sdk/client-s3";
 
-import { EnvParseConfig } from "@/util/env.schema";
 import { v4 as uuid } from "uuid";
 
-import { NextRequest } from "next/server";
+import { EnvParseConfig } from "@/util/env.schema";
 import { auth } from "@/lib/auth";
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+import { recordUuidSchema } from "@/schema/item-params";
+import { createAudio } from "@/db/record";
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
   const user = await auth();
 
-  if (!user) {
+  if (!user || !user.user || !user.user.id) {
     return new Response("unauthorization", { status: 401 });
   }
 
   try {
     const data = formData.get("file") as File;
+    const recordId = formData.get("recordId") as string;
+    const startTime = formData.get("startTime") as string;
+    const endTime = formData.get("endTime") as string;
+
+    const recordIdValid = recordUuidSchema.safeParse(recordId);
+    if (!recordIdValid.success) {
+      return new Response("invalid record id", { status: 400 });
+    }
 
     const s3 = new S3Client({
       credentials: {
@@ -36,7 +40,6 @@ export async function POST(req: NextRequest) {
     });
 
     const fileType = data.type;
-    const filename = data.name;
     const arrayBuffer = await data.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
@@ -48,16 +51,23 @@ export async function POST(req: NextRequest) {
 
     const params: PutObjectCommandInput = {
       Bucket: EnvParseConfig.BUCKET_NAME,
-      Key: `images/${formattedTimestamp}_${uuid()}`, // Include the filename in the key
+      Key: `${recordId}/${formattedTimestamp}_${uuid()}`,
       Body: buffer,
       ContentType: fileType,
     };
 
     const userId = user?.user?.id;
-    // TODO: write data info to database
 
     const command = new PutObjectCommand(params);
     await s3.send(command);
+
+    await createAudio({
+      userId: userId,
+      recordId: recordIdValid.data,
+      audioUrl: params.Key as string,
+      startSeconds: startTime,
+      endSeconds: endTime,
+    });
 
     return Response.json({ message: "File uploaded successfully" });
   } catch (error) {

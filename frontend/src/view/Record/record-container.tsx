@@ -120,11 +120,14 @@ const RecordContainer = (props: RecordContainerProps) => {
         <div className="flex w-full flex-col gap-4 lg:w-1/2">
           <h4 className="text-lg font-semibold md:text-2xl"></h4>
           <Record
+            recordInfo={recordInfo}
             key={data?.strem?.id ?? "record-id"}
             data={data}
             state={state}
             utils={utils}
             forms={forms}
+            startTime={sliderValue[0]}
+            endTime={sliderValue[1]}
           />
         </div>
       </section>

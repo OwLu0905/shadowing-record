@@ -22,6 +22,7 @@ import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
 import { UseFormReturn } from "react-hook-form";
 import { AudioSubmitForm } from "./record-container";
 import { format } from "date-fns/format";
+import { useRouter } from "next/navigation";
 
 type RecordProps = {
   data: {
@@ -42,17 +43,29 @@ type RecordProps = {
     cleanup: () => void;
   };
   forms: UseFormReturn<AudioSubmitForm, any, undefined>;
+  recordInfo: {
+    title: string;
+    description: string | null;
+    shadowingUrl: string;
+    shadowingType: number;
+    userId: string;
+    recordId: string;
+    createdAt: Date;
+  }[];
+  startTime: number;
+  endTime: number;
 };
 
 const Record = (props: RecordProps) => {
   // NOTE: audio
-  const { data, state, utils, forms } = props;
+  const { data, state, utils, forms, recordInfo, startTime, endTime } = props;
   const blobData = data.blob;
   const mediaState = state.mediaState;
   const isRecording = mediaState === "recording" || mediaState === "paused";
   const isAvailable = state.deviceState;
 
   const { cleanup } = utils;
+  console.log(startTime, endTime);
 
   // NOTE: Draw canvas
   const containerRef = useRef<HTMLDivElement>(null);
@@ -88,6 +101,8 @@ const Record = (props: RecordProps) => {
     clipCanvas: clipRef.current,
     audioBlob: blobData,
   });
+
+  const router = useRouter();
 
   useEffect(() => {
     if (blobData && containerRef.current) {
@@ -157,10 +172,16 @@ const Record = (props: RecordProps) => {
     });
   }
 
-  async function saveAudioToFile() {
+  async function saveAudioToFile(
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) {
+    e.preventDefault();
     if (!data.blob) return;
     const formData = new FormData();
     formData.append("file", data.blob);
+    formData.append("recordId", recordInfo[0].recordId);
+    formData.append("startTime", `${startTime}`);
+    formData.append("endTime", `${endTime}`);
     try {
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -175,6 +196,7 @@ const Record = (props: RecordProps) => {
     } catch (error) {
       console.error("Error uploading audio:", error);
     }
+    // router.refresh();
   }
 
   const handleCanvasClick = async (
@@ -471,6 +493,7 @@ const Record = (props: RecordProps) => {
         </div>
 
         <Button
+          type="button"
           className="w-fit self-end"
           onClick={saveAudioToFile}
           disabled={!audioBuffer}
