@@ -14,7 +14,7 @@ import MobileNavContainer from "../sidebar/mobile-container";
 const Header = async () => {
   const session = await auth();
   return (
-    <header className="flex h-14 w-full items-center gap-4 bg-background py-8 pr-10 shadow-sm shadow-accent md:pl-10 md:pr-10">
+    <header className="flex h-14 w-full items-center gap-4 py-8 pr-10 shadow-sm shadow-accent md:pl-10 md:pr-10">
       <Drawer direction="left">
         <DrawerTrigger className="block px-6 md:hidden">
           <MenuIcon className="h-5 w-5" />

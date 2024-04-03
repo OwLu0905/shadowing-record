@@ -45,7 +45,7 @@ const RecordSearch = (props: RecordSearchProps) => {
     <>
       <div
         className={cn(
-          "mx-auto flex w-full max-w-2xl flex-col items-start justify-between gap-4 bg-secondary/50 py-4 focus-within:bg-secondary/60 focus-within:shadow-sm focus-within:outline focus-within:outline-1 focus-within:outline-gray-300/80 md:flex-row",
+          "mx-auto flex w-full max-w-2xl flex-col items-start justify-between gap-4 bg-popover/60 py-4 transition-colors duration-150 ease-in-out focus-within:bg-popover/60 focus-within:shadow-sm focus-within:outline focus-within:outline-1 focus-within:outline-ring/10 md:flex-row",
           line === 1 ? "rounded-xl" : "rounded-2xl",
         )}
       >

@@ -13,6 +13,8 @@ import { ThemeProvider } from "@/provider/theme-provider";
 import { QueryProvider } from "@/provider/queryProvider";
 import { Toaster } from "react-hot-toast";
 
+import NextTopLoader from "nextjs-toploader";
+
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
@@ -29,11 +31,9 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          inter.variable,
-        )}
+        className={cn("min-h-screen font-sans antialiased", inter.variable)}
       >
+        <NextTopLoader />
         <SessionProvider session={session}>
           <QueryProvider>
             <ThemeProvider

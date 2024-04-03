@@ -28,7 +28,7 @@ const SearchInput = ({ setMount, setLineHeight }: SearchInputProps) => {
       tabIndex={0}
       data-placeholder={!emptyText ? undefined : "enter your shadowing url"}
       className={cn(
-        "mx-6 mb-auto mt-[5px] h-full min-w-[50%] flex-grow overflow-hidden outline-0 focus:outline focus:outline-sky-400 break-all",
+        "mx-6 mb-auto mt-[5px] h-full min-w-[50%] flex-grow overflow-hidden break-all outline-0 focus:outline focus:outline-sky-400",
         !emptyText
           ? ""
           : "before:float-left before:h-0 before:text-primary/80 before:content-[attr(data-placeholder)]",

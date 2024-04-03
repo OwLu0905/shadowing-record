@@ -61,21 +61,17 @@ const RecordContainer = (props: RecordContainerProps) => {
       return;
     }
 
-    await utils.start();
-
-    if (!playerRef.current) return;
-    playerRef.current?.seekTo(sliderValue[0]);
-
-    setPlaying(true);
+    onConfirmSyncRecord(sync);
   }
 
   async function onConfirmSyncRecord(sync: boolean) {
     await utils.start();
 
-    if (!playerRef.current) return;
-    playerRef.current?.seekTo(sliderValue[0]);
+    if (sync && playerRef.current) {
+      playerRef.current?.seekTo(sliderValue[0]);
 
-    setPlaying(true);
+      setPlaying(true);
+    }
   }
 
   function onSyncResume() {

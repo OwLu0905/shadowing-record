@@ -381,7 +381,7 @@ const Record = (props: RecordProps) => {
           <Trash2 className="mr-2 h-5 w-5" /> Delete
         </Button>
         <div
-          className="relative flex w-full flex-col data-[recording=true]:animate-sparkup data-[recording=true]:outline data-[recording=true]:outline-red-500"
+          className="relative flex w-full flex-col bg-card data-[recording=true]:animate-sparkup data-[recording=true]:outline data-[recording=true]:outline-red-500"
           onClick={handleCanvasClick}
           data-recording={isRecording}
         >

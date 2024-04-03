@@ -120,7 +120,7 @@ const Player = (props: PlayerProps) => {
           )}
         </CardContent>
         <CardContent className="flex flex-col items-center">
-          <div className="w-full pb-8 pt-2">
+          <div className="h-12 w-full pb-8 pt-2">
             {hasWindow && playerRef.current && (
               <SliderWithLabel
                 className=""

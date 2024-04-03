@@ -22,7 +22,7 @@ const config = {
     extend: {
       width: {
         "sidebar-open": "18rem",
-        "sidebar-close": "4rem",
+        "sidebar-close": "5rem",
       },
       colors: {
         border: "hsl(var(--border))",

@@ -12,6 +12,8 @@ import {
 
 import { getAudiosById } from "@/db/record";
 
+import { format } from "date-fns";
+
 type HistoryProps = {
   recordId: string;
 };
@@ -24,24 +26,28 @@ const History = async (props: HistoryProps) => {
   if (!data) return <></>;
 
   return (
-    <div>
+    <div className="pb-12">
       <h2 className="text-lg font-semibold md:text-2xl">Recording History</h2>
-      <div className="mt-4 hidden overflow-x-auto rounded-lg border shadow-sm md:block">
+      <div className="mt-4 hidden overflow-hidden rounded-lg border shadow-sm md:block">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-1/3">Date</TableHead>
-              <TableHead className="max-w-[150px]">start</TableHead>
-              <TableHead className="md:table-cell">end</TableHead>
-              <TableHead className="w-1/3">Waveform</TableHead>
+              <TableHead className="w-1/4">Date</TableHead>
+              <TableHead className="">start</TableHead>
+              <TableHead className="">end</TableHead>
+              <TableHead className="w-2/3">Waveform</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           {data.map((item) => {
+            const formatDate = format(
+              new Date(item.createdAt),
+              "yyyy-MM-dd hh:mm",
+            );
             return (
               <TableBody key={item.audioUrl}>
                 <TableRow>
-                  <TableCell>{new Date(item.createdAt).toString()}</TableCell>
+                  <TableCell>{formatDate}</TableCell>
                   <TableCell>{item.startSeconds}</TableCell>
                   <TableCell className="md:table-cell">
                     {item.endSeconds}
