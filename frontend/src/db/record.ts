@@ -98,8 +98,6 @@ export const createAudio = async (data: z.infer<typeof NewAudioSchema>) => {
   } catch (error) {
     throw error;
   }
-
-  revalidatePath(`/records/${data.recordId}`);
 };
 
 export const getAudiosById = async (recordId: string) => {

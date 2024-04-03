@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useTransition } from "react";
 
 import useAudioWaveform from "@/hooks/useAudioWaveform";
 
@@ -103,6 +103,7 @@ const Record = (props: RecordProps) => {
   });
 
   const router = useRouter();
+  const [isPending, startTransitio] = useTransition();
 
   useEffect(() => {
     if (blobData && containerRef.current) {
@@ -506,8 +507,12 @@ const Record = (props: RecordProps) => {
         <Button
           type="button"
           className="w-fit self-end"
-          onClick={saveAudioToFile}
-          disabled={!audioBuffer}
+          onClick={(e) => {
+            startTransitio(() => {
+              saveAudioToFile(e);
+            });
+          }}
+          disabled={isPending || !audioBuffer}
         >
           Save
         </Button>
