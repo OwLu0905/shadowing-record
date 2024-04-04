@@ -144,3 +144,16 @@ export const getAudiosById = async (recordId: string) => {
     return null;
   }
 };
+
+export const deleteaAudioById = async (recordId: string) => {
+  try {
+    const recordUuidValid = recordUuidSchema.safeParse(recordId);
+    if (!recordUuidValid.success) {
+      throw new Error("invalid audios data");
+    }
+
+    await db.delete(audios).where(eq(audios.recordId, recordId));
+  } catch (error) {
+    console.log(error);
+  }
+};

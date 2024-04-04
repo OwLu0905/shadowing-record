@@ -13,6 +13,7 @@ import {
 import { getAudiosById } from "@/db/record";
 
 import { format } from "date-fns";
+import Waveform from "@/components/waveform";
 
 type HistoryProps = {
   recordId: string;
@@ -35,7 +36,7 @@ const History = async (props: HistoryProps) => {
               <TableHead className="w-1/4">Date</TableHead>
               <TableHead className="">start</TableHead>
               <TableHead className="">end</TableHead>
-              <TableHead className="w-2/3">Waveform</TableHead>
+              <TableHead className="w-[600px]">Waveform</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -53,11 +54,7 @@ const History = async (props: HistoryProps) => {
                     {item.endSeconds}
                   </TableCell>
                   <TableCell>
-                    <div className="my-6 flex h-6 w-full items-center">
-                      <audio controls>
-                        <source src={`${item.audioUrl}`} type="audio/webm" />
-                      </audio>
-                    </div>
+                    <Waveform blobData={`${item.audioUrl}`} />
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
