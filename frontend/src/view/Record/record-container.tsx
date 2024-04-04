@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
 
 import Player from "@/view/player/player";
@@ -7,8 +7,8 @@ import Record from "@/view/record/Record";
 
 import useRecordMedia from "@/hooks/useRecordMedia";
 import WarningDialog from "@/components/common/warn-dialog";
-import History from "./History";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 type RecordContainerProps = {
   recordInfo:
@@ -65,12 +65,16 @@ const RecordContainer = (props: RecordContainerProps) => {
   }
 
   async function onConfirmSyncRecord(sync: boolean) {
-    await utils.start();
+    try {
+      await utils.start();
 
-    if (sync && playerRef.current) {
-      playerRef.current?.seekTo(sliderValue[0]);
+      if (sync && playerRef.current) {
+        playerRef.current?.seekTo(sliderValue[0]);
 
-      setPlaying(true);
+        setPlaying(true);
+      }
+    } catch (error) {
+      toast.error("Error accessing media devices");
     }
   }
 
@@ -97,7 +101,6 @@ const RecordContainer = (props: RecordContainerProps) => {
       <section className="container mx-auto flex flex-col py-10 lg:flex-row lg:gap-x-6">
         <div className="w-full lg:w-1/2">
           <Player
-            url={recordInfo[0].shadowingUrl}
             playerRef={playerRef}
             playing={playing}
             setPlaying={setPlaying}
@@ -111,6 +114,7 @@ const RecordContainer = (props: RecordContainerProps) => {
             onSyncPause={onSyncPause}
             onSyncStop={onSyncStop}
             forms={forms}
+            recordInfo={recordInfo}
           />
         </div>
         <div className="flex w-full flex-col gap-4 lg:w-1/2">

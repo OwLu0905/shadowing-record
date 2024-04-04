@@ -22,7 +22,6 @@ import { AudioSubmitForm } from "../record/record-container";
 type SliderState = [start: number, end: number];
 
 type PlayerProps = {
-  url: string;
   playerRef: React.RefObject<ReactPlayer>;
 
   playing: boolean;
@@ -39,11 +38,19 @@ type PlayerProps = {
   onSyncPause: () => void;
   onSyncStop: () => void;
   forms: UseFormReturn<AudioSubmitForm, any, undefined>;
+  recordInfo: {
+    title: string;
+    description: string | null;
+    shadowingUrl: string;
+    shadowingType: number;
+    userId: string;
+    recordId: string;
+    createdAt: Date;
+  }[];
 };
 
 const Player = (props: PlayerProps) => {
   const {
-    url,
     playerRef,
     playing,
     setPlaying,
@@ -57,7 +64,12 @@ const Player = (props: PlayerProps) => {
     onSyncPause,
     onSyncStop,
     forms,
+    recordInfo,
   } = props;
+
+  const url = recordInfo[0].shadowingUrl;
+  const title = recordInfo[0].title;
+  const description = recordInfo[0].description;
 
   const isRecording = mediaState === "recording" || mediaState === "paused";
 
@@ -96,8 +108,8 @@ const Player = (props: PlayerProps) => {
       <Card className="mb-4 w-full">
         <CardHeader className="flex flex-row items-center">
           <div className="grid gap-1.5">
-            <CardTitle>Lorem, ipsum dolor.</CardTitle>
-            <CardDescription>Lorem ipsum dolor sit. vitae!</CardDescription>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
           </div>
           <Button className="ml-auto" size="sm">
             <Pencil className="mr-1 h-4 w-4" />

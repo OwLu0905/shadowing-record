@@ -2,8 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import useElapsedTime from "./useElapsedTime";
 
-import toast from "react-hot-toast";
-
 import { DEFAULT_BITS_PER_SECOND, MEDIA_CONSTRAINT } from "@/lib/constants";
 
 // NOTE: https://stackoverflow.com/questions/66301471/webrtc-getdisplaymedia-does-not-capture-sound-from-the-remote-stream
@@ -104,9 +102,8 @@ const useRecordMedia = () => {
       mediaRef.current = recorder;
       recorder.stop();
     } catch (err) {
-      console.error("Error accessing media devices:", err);
       setIsReady(false);
-      toast.error("Error accessing media devices");
+      throw new Error("Error accessing media devices");
     }
   };
 

@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
-import { Trash2 } from "lucide-react";
+import { AlertCircle, Trash2 } from "lucide-react";
 import { throttle } from "@/util/throttle";
 import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
 import { UseFormReturn } from "react-hook-form";
@@ -24,6 +24,7 @@ import { AudioSubmitForm } from "./record-container";
 import { format } from "date-fns/format";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type RecordProps = {
   data: {
@@ -353,10 +354,14 @@ const Record = (props: RecordProps) => {
 
   if (isAvailable === false)
     return (
-      <div>
-        Please check whether the record device available or the permission of
-        mic
-      </div>
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          Please check whether the record device available or the permission of
+          mic
+        </AlertDescription>
+      </Alert>
     );
 
   return (
