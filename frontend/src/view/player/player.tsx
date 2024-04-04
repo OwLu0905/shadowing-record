@@ -67,6 +67,8 @@ const Player = (props: PlayerProps) => {
     recordInfo,
   } = props;
 
+  const [playbackRate, setPlaybackRate] = useState(1);
+
   const url = recordInfo[0].shadowingUrl;
   const title = recordInfo[0].title;
   const description = recordInfo[0].description;
@@ -128,6 +130,7 @@ const Player = (props: PlayerProps) => {
               onPlay={startPlaying}
               onReady={calculateDuration}
               onProgress={handleProgress}
+              playbackRate={playbackRate}
             />
           )}
         </CardContent>
@@ -157,6 +160,8 @@ const Player = (props: PlayerProps) => {
             sliderValue={sliderValue}
             playing={playing}
             setPlaying={setPlaying}
+            playbackRate={playbackRate}
+            setPlaybackRate={setPlaybackRate}
             disableActions={isRecording}
           />
         </CardContent>
