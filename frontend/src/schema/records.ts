@@ -12,6 +12,7 @@ export const NewRecordSchema = z.object({
   userId: recordUuidSchema,
   title: z.string().min(1, { message: "required" }),
   description: z.string().min(1, { message: "required" }),
+  thumbnailUrl: z.string(),
   shadowingUrl: z.string().min(1, { message: "required" }),
   shadowingType: z.number().min(1, { message: "required" }),
 });

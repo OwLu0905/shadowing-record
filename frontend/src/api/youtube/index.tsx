@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import httpAxios from "../http";
 
 export interface YoutubeOEmbedResponse {
   type: "video";

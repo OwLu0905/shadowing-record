@@ -51,14 +51,15 @@ const SubmitForm = (props: SubmitForm) => {
     },
   });
 
-  async function onSubmit(data: z.infer<typeof NewRecordFormSchema>) {
-    const type = ShadowingTypeMap[data.shadowingType];
+  async function onSubmit(value: z.infer<typeof NewRecordFormSchema>) {
+    const type = ShadowingTypeMap[value.shadowingType];
     startTransition(() => {
       if (!user?.id) return;
       createRecord({
-        ...data,
+        ...value,
         shadowingType: type,
         userId: user.id,
+        thumbnailUrl: data.thumbnail_url,
       });
       queryClient.invalidateQueries({ queryKey: ["records"] });
       console.log("invalidateQueries");

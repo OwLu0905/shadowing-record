@@ -84,6 +84,7 @@ export const records = pgTable("records", {
   shadowingType: integer("shadowing_type")
     .notNull()
     .references(() => kinds.kindId),
+  thumbnailUrl: text("thumbnail_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
