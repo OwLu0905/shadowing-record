@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import PreviewVideo from "@/view/record/preview-video";
-import RecordSearch from "@/view/record/record-search";
+import PreviewVideo from "@/view/records/preview-video";
+import RecordSearch from "@/view/records/record-search";
 
 import { useYtCheckMutation } from "@/api/youtube";
 

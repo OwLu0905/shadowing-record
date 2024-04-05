@@ -1,12 +1,12 @@
-import React, { Suspense } from "react";
+import React from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 
 import { recordUuidSchema } from "@/schema/item-params";
 import { getAudiosById, getRecordById } from "@/db/record";
 
-import RecordContainer from "@/view/record/record-container";
-import History from "@/view/record/History";
+import RecordContainer from "@/view/records/record-container";
+import History from "@/view/records/History";
 import {
   HydrationBoundary,
   QueryClient,

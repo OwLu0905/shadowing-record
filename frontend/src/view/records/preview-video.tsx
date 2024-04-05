@@ -4,7 +4,7 @@ import ReactPlayer from "react-player";
 import { ClimbingBoxLoader } from "react-spinners";
 
 import { YoutubeOEmbedResponse } from "@/api/youtube";
-import SubmitForm from "@/view/record/search/submit-form";
+import SubmitForm from "@/view/records/search/submit-form";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type PreviewVideoProps = {

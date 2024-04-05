@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { RingLoader } from "react-spinners";
 
 import { keymap } from "prosemirror-keymap";
 import { EditorState } from "prosemirror-state";
@@ -9,11 +8,11 @@ import { ProseMirror } from "@nytimes/react-prosemirror";
 
 import { cn } from "@/lib/utils";
 
-import { shiftEnterKeyMap } from "@/view/record/search/keymap";
-import { editorStateSchema } from "@/view/record/search/editor-schema";
-import SearchInput from "@/view/record/search/search-input";
-import PasteButton from "@/view/record/search/paste-button";
-import SubmitButton from "@/view/record/search/submit-button";
+import { shiftEnterKeyMap } from "@/view/records/search/keymap";
+import { editorStateSchema } from "@/view/records/search/editor-schema";
+import SearchInput from "@/view/records/search/search-input";
+import PasteButton from "@/view/records/search/paste-button";
+import SubmitButton from "@/view/records/search/submit-button";
 
 import { type YoutubeOEmbedResponse } from "@/api/youtube";
 import { type UseMutationResult } from "@tanstack/react-query";

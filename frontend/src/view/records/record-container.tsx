@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
 
 import Player from "@/view/player/player";
-import Record from "@/view/record/Record";
+import Record from "@/view/records/Record";
 
 import useRecordMedia from "@/hooks/useRecordMedia";
 import WarningDialog from "@/components/common/warn-dialog";
