@@ -4,7 +4,7 @@ import { getRecordByUserId } from "@/db/record";
 const useRecordListsQuery = (userId: string) => {
   return useQuery({
     queryFn: () => getRecordByUserId(userId),
-    queryKey: ["records"],
+    queryKey: [userId, "records"],
   });
 };
 

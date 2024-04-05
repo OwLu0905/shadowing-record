@@ -15,7 +15,7 @@ const SidebarContainer = async () => {
   if (session?.user?.id) {
     queryClient.prefetchQuery({
       queryFn: () => getRecordByUserId(session!.user!.id!),
-      queryKey: ["records"],
+      queryKey: [session.user.id, "records"],
     });
   }
 

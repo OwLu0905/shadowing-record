@@ -61,7 +61,7 @@ const SubmitForm = (props: SubmitForm) => {
         userId: user.id,
         thumbnailUrl: data.thumbnail_url,
       });
-      queryClient.invalidateQueries({ queryKey: ["records"] });
+      queryClient.invalidateQueries({ queryKey: [user.id, "records"] });
       console.log("invalidateQueries");
     });
   }

@@ -3,13 +3,19 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 
 import { recordUuidSchema } from "@/schema/item-params";
-import { getRecordById } from "@/db/record";
+import { getAudiosById, getRecordById } from "@/db/record";
 
 import RecordContainer from "@/view/record/record-container";
 import History from "@/view/record/History";
+import {
+  HydrationBoundary,
+  QueryClient,
+  dehydrate,
+} from "@tanstack/react-query";
 
 const RecordItemPage = async ({ params }: { params: { itemId: string } }) => {
   const user = await auth();
+  const queryClient = new QueryClient();
 
   if (!user) redirect("/login");
 
@@ -17,23 +23,31 @@ const RecordItemPage = async ({ params }: { params: { itemId: string } }) => {
   const validId = recordUuidSchema.safeParse(itemId);
 
   if (!validId.success) {
-    return <section className="container mx-20">Page Not Found!! :(</section>;
+    redirect("/records");
   }
+
   const recordUuid = validId.data;
 
   const data = await getRecordById(recordUuid);
 
-  // NOTE: select the data from db
-  //
-  if (!data) return <></>;
+  if (user?.user?.id) {
+    queryClient.prefetchQuery({
+      queryFn: () => getAudiosById(itemId),
+      queryKey: [itemId, "history"],
+    });
+  }
+
+  if (!data || data?.length === 0) {
+    redirect("/records");
+  }
 
   return (
     <>
       <RecordContainer recordInfo={data} />
       <section className="container mx-auto flex flex-col">
-        <Suspense fallback={<>loading...</>}>
+        <HydrationBoundary state={dehydrate(queryClient)}>
           <History recordId={data[0].recordId} />
-        </Suspense>
+        </HydrationBoundary>
       </section>
     </>
   );

@@ -9,12 +9,10 @@ import { audios, records } from "@/db/schema/schema";
 import { recordUuidSchema } from "@/schema/item-params";
 import { NewAudioSchema, NewRecordSchema } from "@/schema/records";
 import {
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3";
-import { EnvParseConfig } from "@/util/env.schema";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+  deleteS3ObjectItem,
+  deleteS3ObjectList,
+  getS3SignedUrlList,
+} from "@/api/s3";
 
 // NOTE: Create
 export const createRecord = async (data: z.infer<typeof NewRecordSchema>) => {
@@ -62,15 +60,34 @@ export const getRecordById = async (id: string) => {
       throw new Error("invalid record");
     }
 
-    return await db
+    const data = await db
       .select()
       .from(records)
       .where(eq(records.recordId, id))
       .orderBy(desc(records.createdAt));
+
+    if (data.length === 0) {
+      throw new Error("can't fint this record");
+    }
+    return data;
   } catch (err) {
     console.log(err, "cant get record");
+  }
+};
+export const deleteaRecordById = async (recordId: string) => {
+  try {
+    const recordUuidValid = recordUuidSchema.safeParse(recordId);
+    if (!recordUuidValid.success) {
+      throw new Error("invalid audios data");
+    }
 
-    return null;
+    await db.delete(records).where(eq(records.recordId, recordId));
+
+    await deleteS3ObjectList(recordId);
+
+    revalidatePath(`records/${recordId}`);
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -113,30 +130,13 @@ export const getAudiosById = async (recordId: string) => {
       .where(eq(audios.recordId, recordId))
       .orderBy(desc(audios.createdAt));
 
-    const s3 = new S3Client({
-      credentials: {
-        accessKeyId: EnvParseConfig.AWS_ACCESS_KEY_ID,
-        secretAccessKey: EnvParseConfig.AWS_SECRET_ACCESS_KEY,
-      },
-      region: EnvParseConfig.BUCKET_REGION,
-    });
-
-    const getPresignedUrl = async (audioUrl: string) => {
-      const command = new GetObjectCommand({
-        Bucket: EnvParseConfig.BUCKET_NAME,
-        Key: `${recordId}/${audioUrl}`,
-      });
-      return getSignedUrl(s3, command, { expiresIn: 3600 });
-    };
-
-    const presignedUrls = await Promise.all(
-      data.map((audio) => getPresignedUrl(audio.audioUrl)),
-    );
+    const presignedUrls = await getS3SignedUrlList(recordId, data);
 
     const newData = data.map((audio, index) => ({
       ...audio,
       audioUrl: presignedUrls[index],
     }));
+
     return newData;
   } catch (err) {
     console.log(err, "cant get audios");
@@ -145,14 +145,18 @@ export const getAudiosById = async (recordId: string) => {
   }
 };
 
-export const deleteaAudioById = async (recordId: string) => {
+export const deleteaAudioById = async (audioId: number) => {
   try {
-    const recordUuidValid = recordUuidSchema.safeParse(recordId);
-    if (!recordUuidValid.success) {
-      throw new Error("invalid audios data");
-    }
+    const deleteItem = await db
+      .delete(audios)
+      .where(eq(audios.audioId, audioId))
+      .returning();
 
-    await db.delete(audios).where(eq(audios.recordId, recordId));
+    const recordId = deleteItem[0].recordId;
+    const deletePath = `${recordId}/${audioId}`;
+    await deleteS3ObjectItem(deletePath);
+
+    // revalidatePath(`records/${recordId}`);
   } catch (error) {
     console.log(error);
   }

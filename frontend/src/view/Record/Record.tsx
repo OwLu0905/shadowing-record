@@ -22,9 +22,9 @@ import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
 import { UseFormReturn } from "react-hook-form";
 import { AudioSubmitForm } from "./record-container";
 import { format } from "date-fns/format";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useQueryClient } from "@tanstack/react-query";
 
 type RecordProps = {
   data: {
@@ -103,8 +103,9 @@ const Record = (props: RecordProps) => {
     audioBlob: blobData,
   });
 
-  const router = useRouter();
   const [isPending, startTransitio] = useTransition();
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (blobData && containerRef.current) {
@@ -203,13 +204,16 @@ const Record = (props: RecordProps) => {
           cancelAnimationFrame(requestIdRef.current);
         }
         toast.success("Audio uploaded successfully");
+
+        queryClient.invalidateQueries({
+          queryKey: [recordInfo[0].recordId, "history"],
+        });
       } else {
         toast.error("Error uploading audio");
       }
     } catch (error) {
       console.error("Error uploading audio:", error);
     }
-    // router.refresh();
   }
 
   const handleCanvasClick = async (

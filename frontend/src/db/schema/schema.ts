@@ -95,7 +95,7 @@ export const audios = pgTable("audios", {
     .references(() => users.id, { onDelete: "restrict", onUpdate: "cascade" }),
   recordId: uuid("record_id")
     .notNull()
-    .references(() => records.recordId),
+    .references(() => records.recordId, { onDelete: "cascade" }),
   audioUrl: text("audio_url").notNull(),
   startSeconds: integer("start_seconds").notNull(),
   endSeconds: integer("end_seconds").notNull(),

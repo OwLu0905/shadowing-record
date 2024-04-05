@@ -15,6 +15,13 @@
       "when": 1712239827276,
       "tag": "0001_spooky_jetstream",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1712299076020,
+      "tag": "0002_aromatic_masque",
+      "breakpoints": true
     }
   ]
 }

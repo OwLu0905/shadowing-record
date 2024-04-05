@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -10,21 +11,41 @@ import {
   Table,
 } from "@/components/ui/table";
 
-import { getAudiosById } from "@/db/record";
+import useAudioListQuery from "@/api/record/useAudioList";
 
 import { format } from "date-fns";
 import Waveform from "@/components/waveform";
+import { PlayIcon, Trash2 } from "lucide-react";
+import WarningDialog from "@/components/common/warn-dialog";
+import { deleteaAudioById } from "@/db/record";
+import { useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type HistoryProps = {
   recordId: string;
 };
 
-const History = async (props: HistoryProps) => {
+// TODO: move history to client component ( use useQuery to cache the data)
+const History = (props: HistoryProps) => {
   const { recordId } = props;
+  const { data, isLoading } = useAudioListQuery(recordId);
+  const [warning, setWarning] = useState(false);
+  const queryClient = useQueryClient();
+  const audioIdRef = useRef<number | null>(null);
 
-  const data = await getAudiosById(recordId);
-
-  if (!data) return <></>;
+  // TODO: useMutation
+  async function onConfirmDeleteAudio() {
+    if (!audioIdRef.current) return;
+    try {
+      await deleteaAudioById(audioIdRef.current);
+      toast.success("OK");
+      audioIdRef.current = null;
+      queryClient.invalidateQueries({ queryKey: [recordId, "history"] });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <div className="pb-12">
@@ -40,34 +61,86 @@ const History = async (props: HistoryProps) => {
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
-          {data.map((item) => {
-            const formatDate = format(
-              new Date(item.createdAt),
-              "yyyy-MM-dd hh:mm",
-            );
-            return (
-              <TableBody key={item.audioUrl}>
-                <TableRow>
-                  <TableCell>{formatDate}</TableCell>
-                  <TableCell>{item.startSeconds}</TableCell>
-                  <TableCell className="md:table-cell">
-                    {item.endSeconds}
-                  </TableCell>
-                  <TableCell>
-                    <Waveform blobData={`${item.audioUrl}`} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button className="h-8 w-8 rounded-full">2</Button>
-                      <Button className="h-8 w-8 rounded-full">3</Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            );
-          })}
+          {!data || isLoading ? (
+            <TableBody>
+              <TableRow>
+                <TableCell>
+                  <Skeleton className="h-12 w-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-12 w-full" />
+                </TableCell>
+                <TableCell className="md:table-cell">
+                  <Skeleton className="h-12 w-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-12 w-full" />
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-x-2">
+                    <Skeleton className="h-5 w-5 rounded-full" />
+                    <Skeleton className="h-5 w-5 rounded-full" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          ) : (
+            data.map((item) => {
+              const formatDate = format(
+                new Date(item.createdAt),
+                "yyyy-MM-dd hh:mm",
+              );
+              return (
+                <TableBody key={item.audioUrl}>
+                  <TableRow>
+                    <TableCell>{formatDate}</TableCell>
+                    <TableCell>{item.startSeconds}</TableCell>
+                    <TableCell className="md:table-cell">
+                      {item.endSeconds}
+                    </TableCell>
+                    <TableCell>
+                      <Waveform blobData={`${item.audioUrl}`} />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="rounded-full"
+                        >
+                          <PlayIcon className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="rounded-full"
+                          onClick={() => {
+                            audioIdRef.current = item.audioId;
+                            setWarning(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              );
+            })
+          )}
         </Table>
       </div>
+
+      <WarningDialog
+        show={warning}
+        handleClose={setWarning}
+        label={"Delete"}
+        title="Warning: Delete Audio"
+        description="Do you want to continue delete or return?"
+        onConfirm={onConfirmDeleteAudio}
+      />
     </div>
   );
 };
