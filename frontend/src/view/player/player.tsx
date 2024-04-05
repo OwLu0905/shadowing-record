@@ -17,7 +17,7 @@ import PlayerActions from "@/view/player/player-actions";
 
 import { MicIcon, Pause, Pencil, StepForward, StopCircle } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import { AudioSubmitForm } from "../record/record-container";
+import { AudioSubmitForm } from "@/view/records/record-container";
 
 type SliderState = [start: number, end: number];
 
