@@ -12,10 +12,14 @@ const RecordPage = () => {
   const ytInfo = ytMutate?.data;
 
   return (
-    <section className="container mx-auto flex flex-col py-10">
-      <PreviewVideo data={ytInfo} url={url} />
-      <RecordSearch ytMutate={ytMutate} setUrl={setUrl} />
-    </section>
+    <>
+      <section className="container mx-auto flex flex-col py-4 md:py-10">
+        <PreviewVideo data={ytInfo} url={url} />
+      </section>
+      <section className="flex flex-col px-4 md:py-10">
+        <RecordSearch ytMutate={ytMutate} setUrl={setUrl} />
+      </section>
+    </>
   );
 };
 

@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 import { shiftEnterKeyMap } from "@/view/records/search/keymap";
 import { editorStateSchema } from "@/view/records/search/editor-schema";
+
 import SearchInput from "@/view/records/search/search-input";
 import PasteButton from "@/view/records/search/paste-button";
 import SubmitButton from "@/view/records/search/submit-button";
@@ -48,9 +49,6 @@ const RecordSearch = (props: RecordSearchProps) => {
           line === 1 ? "rounded-xl" : "rounded-2xl",
         )}
       >
-        {/** <div className="shrink-0">
-          <RingLoader color="#9f0ff0" size={32} />
-        </div> */}
         <ProseMirror
           mount={ytMutate.isPending ? null : mount}
           state={state}
