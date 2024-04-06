@@ -1,5 +1,4 @@
-import React, { Suspense } from "react";
-import SideNav from "./side-nav";
+import React from "react";
 import {
   HydrationBoundary,
   QueryClient,
@@ -16,7 +15,7 @@ const MobileNavContainer = async () => {
   if (session?.user?.id) {
     queryClient.prefetchQuery({
       queryFn: () => getRecordByUserId(session!.user!.id!),
-      queryKey: ["records"],
+      queryKey: [session.user.id, "records"],
     });
   }
 

@@ -44,7 +44,7 @@ const RecordItemPage = async ({ params }: { params: { itemId: string } }) => {
   return (
     <>
       <RecordContainer recordInfo={data} />
-      <section className="container mx-auto flex flex-col">
+      <section className="container mx-auto flex-col md:flex">
         <HydrationBoundary state={dehydrate(queryClient)}>
           <History recordId={data[0].recordId} />
         </HydrationBoundary>

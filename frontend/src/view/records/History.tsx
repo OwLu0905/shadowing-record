@@ -1,7 +1,9 @@
 "use client";
 import React, { useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useAudioListQuery } from "@/api/record/useAudioList";
+import { useQueryClient } from "@tanstack/react-query";
 
+import { Button } from "@/components/ui/button";
 import {
   TableHead,
   TableRow,
@@ -10,17 +12,15 @@ import {
   TableBody,
   Table,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 
-import useAudioListQuery from "@/api/record/useAudioList";
+import Waveform from "@/components/waveform";
+import WarningDialog from "@/components/common/warn-dialog";
 
 import { format } from "date-fns";
-import Waveform from "@/components/waveform";
 import { PlayIcon, Trash2 } from "lucide-react";
-import WarningDialog from "@/components/common/warn-dialog";
 import { deleteaAudioById } from "@/db/record";
-import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { Skeleton } from "@/components/ui/skeleton";
 
 type HistoryProps = {
   recordId: string;
@@ -50,7 +50,7 @@ const History = (props: HistoryProps) => {
   return (
     <div className="pb-12">
       <h2 className="text-lg font-semibold md:text-2xl">Recording History</h2>
-      <div className="mt-4 hidden overflow-hidden rounded-lg border shadow-sm md:block">
+      <div className="mt-4 overflow-hidden rounded-lg border shadow-sm md:block">
         <Table>
           <TableHeader>
             <TableRow>

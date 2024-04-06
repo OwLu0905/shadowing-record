@@ -1,6 +1,14 @@
 "use client";
-import useRecordListsQuery from "@/api/record/useRecordLists";
+import { useRef, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useRecordListsQuery } from "@/api/record/useRecordLists";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToggleSidebar } from "@/hooks/useToggleSidebar";
+
+import Link from "next/link";
+
 import WarningDialog from "@/components/common/warn-dialog";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,13 +17,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { HoverCardTrigger } from "@/components/ui/hover-card";
+
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+
 import { deleteaRecordById } from "@/db/record";
-import useToggleSidebar from "@/hooks/useToggleSidebar";
 import { cn } from "@/lib/utils";
 import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
-import { HoverCard, HoverCardContent } from "@radix-ui/react-hover-card";
-import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
   EllipsisVertical,
@@ -24,9 +35,6 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 type SideNavProps = {
@@ -88,10 +96,6 @@ const SideNav = ({ userId }: SideNavProps) => {
         className="mx-4 flex flex-col items-start gap-y-2 transition-opacity duration-300 ease-in data-[expand=true]:visible data-[expand=false]:invisible data-[expand=false]:opacity-0 data-[expand=true]:opacity-100"
         data-expand={open}
       >
-        {/**<div className="mb-2 flex w-full justify-center gap-x-8 border-b border-primary px-4 pb-4">
-          <div>Latest</div>
-          <div>Date</div>
-        </div>*/}
         {recordLists?.map((i) => {
           const formatDate = format(new Date(i.createdAt), "yyyy-MM-dd hh:mm");
           return (
@@ -118,7 +122,7 @@ const SideNav = ({ userId }: SideNavProps) => {
                 <HoverCardContent
                   side="right"
                   hideWhenDetached={true}
-                  className="z-5 mx-4 w-60 bg-secondary py-2 shadow-xl shadow-card"
+                  className="z-20 mx-4 w-60 bg-secondary py-2 shadow-lg"
                 >
                   <div className="flex items-center justify-center space-x-4">
                     {i.thumbnailUrl && (

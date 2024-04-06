@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from "react";
 
-const useToggleSidebar = (name: string): [boolean, (data: boolean) => void] => {
+export const useToggleSidebar = (
+  name: string,
+): [boolean, (data: boolean) => void] => {
   const isOpen = useSyncExternalStore(
     subscribe,
     getSnapshot.bind(null, name),
@@ -34,5 +36,3 @@ function getSnapshot(name: string) {
 function getServerSnapshot() {
   return "true"; // Always show "Online" for server-generated HTML
 }
-
-export default useToggleSidebar;
