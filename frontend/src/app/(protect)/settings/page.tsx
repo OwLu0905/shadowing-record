@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 const SettingPage = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -17,12 +17,6 @@ const SettingPage = () => {
       body: formData,
     });
   };
-
-  useEffect(() => {
-    fetch("https://shadow-exercise.s3.ap-southeast-1.amazonaws.com/ap.jpeg", {
-      method: "GET",
-    });
-  }, []);
 
   return (
     <section className="container mx-auto px-20 py-10">

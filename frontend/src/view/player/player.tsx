@@ -11,15 +11,26 @@ import {
   Card,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { SliderWithLabel } from "@/components/custom/ui/slider";
 
 import PlayerActions from "@/view/player/player-actions";
 
 import { MicIcon, Pause, Pencil, StepForward, StopCircle } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
-import { AudioSubmitForm } from "@/view/records/record-container";
 
-type SliderState = [start: number, end: number];
+import type { UseFormReturn } from "react-hook-form";
+
+import type {
+  SliderState,
+  AudioSubmitForm,
+} from "@/view/records/record-container";
+
+import type { RecordItem } from "@/db/schema/type";
 
 type PlayerProps = {
   playerRef: React.RefObject<ReactPlayer>;
@@ -32,21 +43,15 @@ type PlayerProps = {
 
   sliderValue: SliderState;
   setSliderValue: React.Dispatch<React.SetStateAction<SliderState>>;
+
   mediaState: RecordingState;
   onSyncRecord: (sync: boolean) => Promise<void>;
   onSyncResume: () => void;
   onSyncPause: () => void;
   onSyncStop: () => void;
+
   forms: UseFormReturn<AudioSubmitForm, any, undefined>;
-  recordInfo: {
-    title: string;
-    description: string | null;
-    shadowingUrl: string;
-    shadowingType: number;
-    userId: string;
-    recordId: string;
-    createdAt: Date;
-  }[];
+  recordInfo: RecordItem[];
 };
 
 const Player = (props: PlayerProps) => {
@@ -83,17 +88,10 @@ const Player = (props: PlayerProps) => {
         setPlaying(false);
       }
       if (currentTime >= sliderValue[1]) {
-        // playerRef.current.seekTo(startTime); // Loop back to start
         setPlaying(false);
       }
     }
   };
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setHasWindow(true);
-    }
-  }, [setHasWindow]);
 
   function startPlaying() {
     setPlaying(true);
@@ -107,22 +105,12 @@ const Player = (props: PlayerProps) => {
 
   return (
     <>
-      <Card className="mb-4 w-full">
-        <CardHeader className="flex flex-row items-center">
-          <div className="grid gap-1.5">
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </div>
-          <Button className="ml-auto" size="sm">
-            <Pencil className="mr-1 h-4 w-4" />
-            Edit
-          </Button>
-        </CardHeader>
-        <CardContent>
+      <div className="mb-4 w-full">
+        <div className="mb-4 h-[280px]">
           {hasWindow && (
             <ReactPlayer
               width="100%"
-              height="240px"
+              height="100%"
               controls={true}
               ref={playerRef}
               url={url}
@@ -133,28 +121,27 @@ const Player = (props: PlayerProps) => {
               playbackRate={playbackRate}
             />
           )}
-        </CardContent>
-        <CardContent className="flex flex-col items-center">
-          <div className="h-12 w-full pb-8 pt-2">
-            {hasWindow && playerRef.current && (
-              <SliderWithLabel
-                className=""
-                defaultValue={[0, playerRef.current.getDuration()]}
-                onValueChange={
-                  setSliderValue as React.Dispatch<
-                    React.SetStateAction<number[]>
-                  >
-                }
-                step={1}
-                max={playerRef.current?.getDuration() ?? 100}
-                subLabel={[
-                  format(sliderValue[0] * 1000, "mm:ss"),
-                  format(sliderValue[1] * 1000, "mm:ss"),
-                ]}
-                disabled={isRecording}
-              />
-            )}
-          </div>
+        </div>
+
+        <div className="h-12 w-full pb-12 pt-4">
+          {hasWindow && playerRef.current && (
+            <SliderWithLabel
+              className=""
+              defaultValue={[0, playerRef.current.getDuration()]}
+              onValueChange={
+                setSliderValue as React.Dispatch<React.SetStateAction<number[]>>
+              }
+              step={1}
+              max={playerRef.current?.getDuration() ?? 100}
+              subLabel={[
+                format(sliderValue[0] * 1000, "mm:ss"),
+                format(sliderValue[1] * 1000, "mm:ss"),
+              ]}
+              disabled={isRecording}
+            />
+          )}
+        </div>
+        <div className="flex flex-col items-center rounded-xl bg-card px-4 py-2 md:py-2">
           <PlayerActions
             playerRef={playerRef}
             sliderValue={sliderValue}
@@ -164,8 +151,8 @@ const Player = (props: PlayerProps) => {
             setPlaybackRate={setPlaybackRate}
             disableActions={isRecording}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <div className="flex justify-center space-x-4">
         {mediaState === "inactive" && (

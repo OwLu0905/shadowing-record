@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ChevronRightIcon } from "lucide-react";
+import { ChevronRightIcon, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
@@ -62,8 +62,13 @@ export default function Home() {
         </div>
 
         <div className="pt-8">
-          <Button size="lg" className="font-bold" onClick={handleLogin}>
-            Start Terrific
+          <Button
+            size="lg"
+            className="font-bold"
+            variant={"destructive"}
+            onClick={handleLogin}
+          >
+            Become Terrific <Flame className="ml-2 h-5 w-5" />
           </Button>
         </div>
       </section>

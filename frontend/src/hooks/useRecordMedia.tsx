@@ -6,7 +6,7 @@ import { DEFAULT_BITS_PER_SECOND, MEDIA_CONSTRAINT } from "@/lib/constants";
 
 // NOTE: https://stackoverflow.com/questions/66301471/webrtc-getdisplaymedia-does-not-capture-sound-from-the-remote-stream
 //
-const useRecordMedia = () => {
+export const useRecordMedia = () => {
   const mediaRef = useRef<MediaRecorder | null>(null);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
 
@@ -175,5 +175,3 @@ const useRecordMedia = () => {
 
   return returnState;
 };
-
-export default useRecordMedia;

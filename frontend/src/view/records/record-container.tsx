@@ -1,33 +1,28 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import ReactPlayer from "react-player";
+import { useForm } from "react-hook-form";
+import { useRecordMedia } from "@/hooks/useRecordMedia";
 
 import Player from "@/view/player/player";
 import Record from "@/view/records/Record";
-
-import useRecordMedia from "@/hooks/useRecordMedia";
 import WarningDialog from "@/components/common/warn-dialog";
-import { useForm } from "react-hook-form";
+
+import ReactPlayer from "react-player";
 import toast from "react-hot-toast";
 
+import { type RecordItem } from "@/db/schema/type";
+import { format } from "date-fns";
+
 type RecordContainerProps = {
-  recordInfo:
-    | {
-        title: string;
-        description: string | null;
-        shadowingUrl: string;
-        shadowingType: number;
-        userId: string;
-        recordId: string;
-        createdAt: Date;
-      }[]
-    | null;
+  recordInfo: RecordItem[];
 };
 
 export type AudioSubmitForm = {
   start: string;
   end: string;
 };
+
+export type SliderState = [start: number, end: number];
 
 const RecordContainer = (props: RecordContainerProps) => {
   const { recordInfo } = props;
@@ -41,9 +36,7 @@ const RecordContainer = (props: RecordContainerProps) => {
 
   const playerRef = useRef<ReactPlayer>(null);
 
-  const [sliderValue, setSliderValue] = useState<[start: number, end: number]>([
-    0, 0,
-  ]);
+  const [sliderValue, setSliderValue] = useState<SliderState>([0, 0]);
   const [playing, setPlaying] = useState(false);
   const [hasWindow, setHasWindow] = useState(false);
 
@@ -82,10 +75,12 @@ const RecordContainer = (props: RecordContainerProps) => {
     utils.resume();
     setPlaying(true);
   }
+
   function onSyncPause() {
     utils.pause();
     setPlaying(false);
   }
+
   function onSyncStop() {
     utils.stop();
     setPlaying(false);
@@ -98,8 +93,19 @@ const RecordContainer = (props: RecordContainerProps) => {
 
   return (
     <>
-      <section className="container mx-auto flex flex-col py-10 lg:flex-row lg:gap-x-6">
-        <div className="w-full lg:w-1/2">
+      <section className="container flex flex-col items-center gap-1 px-4 pt-8 md:px-10 lg:flex-row lg:gap-x-4">
+        <div className="flex w-full flex-col truncate">
+          <h2 className="w-full truncate text-xl font-semibold md:text-2xl">
+            {recordInfo[0].title}
+          </h2>
+          <p>{recordInfo[0].description}</p>
+        </div>
+        <p className="ml-auto shrink-0 text-xs font-medium text-foreground/50 md:text-sm">
+          {format(recordInfo[0].createdAt, "yyyy-MM-dd")}
+        </p>
+      </section>
+      <section className="container flex flex-col px-4 py-6 md:px-10 md:py-10 lg:flex-row lg:gap-x-6">
+        <div className="mb-4 w-full lg:w-1/2">
           <Player
             playerRef={playerRef}
             playing={playing}
@@ -118,7 +124,6 @@ const RecordContainer = (props: RecordContainerProps) => {
           />
         </div>
         <div className="flex w-full flex-col gap-4 lg:w-1/2">
-          <h4 className="text-lg font-semibold md:text-2xl"></h4>
           <Record
             recordInfo={recordInfo}
             key={data?.strem?.id ?? "record-id"}
