@@ -7,6 +7,7 @@ import { Headphones, Plus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type MobileNavProps = {
   userId: string;
@@ -27,11 +28,11 @@ const MobileNav = (props: MobileNavProps) => {
         <Plus className="h-5 w-5" />
       </DrawerClose>
 
-      <ul className="mx-4 flex flex-col items-start gap-y-2">
+      <ScrollArea className="mx-4 flex h-[80dvh] flex-col items-start gap-y-2">
         {recordLists?.map((i) => {
           const formatDate = format(new Date(i.createdAt), "yyyy-MM-dd hh:mm");
           return (
-            <li
+            <div
               key={i.recordId}
               className={cn(
                 "group/item flex w-full rounded-full px-4 py-1.5 font-normal text-secondary-foreground transition-colors duration-300 ease-in-out hover:bg-primary/10 [&:has([data-state=open])]:bg-primary/10",
@@ -54,10 +55,10 @@ const MobileNav = (props: MobileNavProps) => {
                   </div>
                 </DrawerClose>
               </Link>
-            </li>
+            </div>
           );
         })}
-      </ul>
+      </ScrollArea>
     </aside>
   );
 };

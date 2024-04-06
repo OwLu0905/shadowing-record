@@ -77,7 +77,7 @@ const SliderWithLabel = React.forwardRef<
             {subLabel !== undefined && (
               <div
                 className={
-                  "absolute left-1/2 right-0 top-4 w-fit -translate-x-1/2 cursor-grab text-xs text-gray-500 transition-all duration-150 dark:text-gray-300"
+                  "absolute left-1/2 right-0 top-4 w-fit -translate-x-1/2 cursor-grab px-4 pb-4 text-xs text-gray-500 transition-all duration-150 dark:text-gray-300"
                 }
               >
                 <span>{subLabel[idx]}</span>
