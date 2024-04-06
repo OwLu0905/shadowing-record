@@ -35,7 +35,7 @@ const MobileNav = (props: MobileNavProps) => {
             <div
               key={i.recordId}
               className={cn(
-                "group/item flex w-full rounded-full px-4 py-1.5 font-normal text-secondary-foreground transition-colors duration-300 ease-in-out hover:bg-primary/10 sm:w-[20rem]",
+                "group/item flex w-full rounded-full px-4 py-1.5 font-normal text-secondary-foreground transition-colors duration-300 ease-in-out hover:bg-primary/10 ",
               )}
             >
               <Link
@@ -48,7 +48,7 @@ const MobileNav = (props: MobileNavProps) => {
                 >
                   <div>
                     <Headphones className="h-4 w-4" />
-                    <div className="mx-4 w-full max-w-[12rem] flex-1 space-y-2 truncate py-1 text-xs sm:max-w-[16rem]">
+                    <div className="mx-4 w-full max-w-[12rem]  flex-1 flex-grow space-y-2 truncate py-1 text-xs sm:max-w-[16rem]">
                       <p className="truncate">{i.title}</p>
                       <p className="text-foreground">{formatDate}</p>
                     </div>
