@@ -28,19 +28,19 @@ const MobileNav = (props: MobileNavProps) => {
         <Plus className="h-5 w-5" />
       </DrawerClose>
 
-      <ScrollArea className="mx-4 flex h-[80dvh] flex-col items-start gap-y-2">
+      <ScrollArea className="mx-4 flex h-[80dvh] flex-col items-start gap-y-2 truncate">
         {recordLists?.map((i) => {
           const formatDate = format(new Date(i.createdAt), "yyyy-MM-dd hh:mm");
           return (
             <div
               key={i.recordId}
               className={cn(
-                "group/item flex w-full rounded-full px-4 py-1.5 font-normal text-secondary-foreground transition-colors duration-300 ease-in-out hover:bg-primary/10 [&:has([data-state=open])]:bg-primary/10",
+                "group/item flex w-full rounded-full px-4 py-1.5 font-normal text-secondary-foreground transition-colors duration-300 ease-in-out hover:bg-primary/10 sm:w-[20rem]",
               )}
             >
               <Link
                 href={`/records/${i.recordId}`}
-                className={"w-full flex-1 truncate py-1 text-xs"}
+                className={"w-full flex-1 py-1 text-xs"}
               >
                 <DrawerClose
                   asChild
@@ -48,8 +48,8 @@ const MobileNav = (props: MobileNavProps) => {
                 >
                   <div>
                     <Headphones className="h-4 w-4" />
-                    <div className="mx-4 w-full flex-1 space-y-2 truncate py-1 text-xs">
-                      <p className="">{i.title}</p>
+                    <div className="mx-4 w-full max-w-[12rem] flex-1 space-y-2 truncate py-1 text-xs sm:max-w-[16rem]">
+                      <p className="truncate">{i.title}</p>
                       <p className="text-foreground">{formatDate}</p>
                     </div>
                   </div>
