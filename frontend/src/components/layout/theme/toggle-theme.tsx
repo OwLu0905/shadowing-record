@@ -17,7 +17,7 @@ const ToggleTheme = () => {
   function toggleThemeWithTransition(theme: string) {
     // @ts-ignore
     if (!document.startViewTransition) {
-      setTheme("light");
+      setTheme(theme);
       return;
     }
 
