@@ -1,27 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ReactPlayer from "react-player";
 import { format } from "date-fns/format";
 
-import {
-  CardTitle,
-  CardDescription,
-  CardHeader,
-  CardContent,
-  Card,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { SliderWithLabel } from "@/components/custom/ui/slider";
 
 import PlayerActions from "@/view/player/player-actions";
 
-import { MicIcon, Pause, Pencil, StepForward, StopCircle } from "lucide-react";
+import { MicIcon, Pause, StepForward, StopCircle } from "lucide-react";
 
 import type { UseFormReturn } from "react-hook-form";
 
@@ -123,7 +110,7 @@ const Player = (props: PlayerProps) => {
           )}
         </div>
 
-        <div className="h-12 w-full pb-12 pt-4">
+        <div className="h-12 w-full px-4 pb-12 pt-4">
           {hasWindow && playerRef.current && (
             <SliderWithLabel
               className=""

@@ -8,6 +8,7 @@ import { type UseMutationResult } from "@tanstack/react-query";
 import { convertToYoutubeIdUrl } from "@/lib/utils";
 import { useEditorEventCallback } from "@nytimes/react-prosemirror";
 import { EditorState } from "prosemirror-state";
+import { YOUTUBE_MOBILE_DOMAIN } from "@/lib/constants";
 
 type SubmitButtonProps = {
   mount: HTMLElement | null;
@@ -51,9 +52,20 @@ const SubmitButton = (props: SubmitButtonProps) => {
         let url = new URL(urlV.data);
         const params = url.searchParams;
 
+        const domain = url.hostname;
+        console.log({ domain });
+
         const youtubeSchema = z.string().regex(/^[a-zA-Z0-9_-]{11}$/);
 
-        const youtubeIdValid = youtubeSchema.safeParse(params.get("v"));
+        const parseId =
+          domain === YOUTUBE_MOBILE_DOMAIN
+            ? url.pathname.slice(1)
+            : params.get("v");
+        // NOTE: PC
+        const youtubeIdValid = youtubeSchema.safeParse(parseId);
+
+        // NOTE: mobile
+
         if (youtubeIdValid.success) {
           const youtubeId = youtubeIdValid.data;
           const validUrl = convertToYoutubeIdUrl(youtubeId);

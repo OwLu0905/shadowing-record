@@ -28,7 +28,7 @@ const PlayerActions = (props: PlayerActionsProps) => {
   } = props;
 
   const rateListBack = [0.5, 0.75, 1];
-  const rateListForward = [1.5, 2];
+  const rateListForward = [1.2, 1.5, 2];
 
   function clickPlaybackRate(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     if (e.target instanceof HTMLElement) {
