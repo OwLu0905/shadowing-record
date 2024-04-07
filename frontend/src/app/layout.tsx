@@ -49,10 +49,11 @@ export default async function RootLayout({
                   <main className="mx-auto flex min-h-screen flex-col">
                     {children}
                   </main>
+
+                  <Footer />
                 </div>
               </div>
 
-              <Footer />
               <Toaster />
             </ThemeProvider>
           </QueryProvider>

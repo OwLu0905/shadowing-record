@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <>
       <section className="container mx-auto pb-8 pt-10 md:pb-12">
-        <h2 className="text-center text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl">
+        <h2 className="text-center text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
           Practice Your Pronunciation
         </h2>
         <p className="mx-auto mt-4 max-w-3xl text-center text-lg italic text-secondary-foreground/80 md:mt-6">
@@ -23,7 +23,7 @@ export default function Home() {
         <div className="pt-8 text-center">
           <Button
             size="lg"
-            className="w-full font-bold md:w-fit"
+            className="w-full font-bold sm:w-fit"
             variant={"default"}
             onClick={handleLogin}
           >
@@ -33,7 +33,7 @@ export default function Home() {
       </section>
 
       <section className="container mx-auto pb-4">
-        <div className="flex flex-col justify-center gap-0 md:flex-row md:gap-8">
+        <div className="mx-4 flex flex-col justify-center gap-0 md:flex-row md:gap-8">
           <div className="flex w-fit flex-col gap-1.5 px-2 pb-6 md:rounded md:bg-card md:px-8 md:py-6">
             <Link
               className="inline-flex items-center space-x-2 text-sm font-medium transition-colors hover:underline"

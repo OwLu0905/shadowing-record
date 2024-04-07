@@ -2,8 +2,8 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <footer className="h-12 bg-primary py-4 text-center text-muted-foreground">
-      Footer
+    <footer className="flex w-full items-center justify-center py-6 text-center text-sm text-foreground/60">
+      © 2024 Owlu0905. All rights reserved.
     </footer>
   );
 };
