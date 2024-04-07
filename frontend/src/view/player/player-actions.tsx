@@ -28,7 +28,7 @@ const PlayerActions = (props: PlayerActionsProps) => {
   } = props;
 
   const rateListBack = [0.5, 0.75, 1];
-  const rateListForward = [1.2, 1.5, 2];
+  const rateListForward = [1.25, 1.5, 2];
 
   function clickPlaybackRate(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     if (e.target instanceof HTMLElement) {
@@ -39,9 +39,9 @@ const PlayerActions = (props: PlayerActionsProps) => {
   }
 
   return (
-    <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 md:gap-4">
+    <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2">
       <div
-        className="col-span-3 col-start-1 flex justify-center gap-x-2 md:col-span-1 md:justify-self-start"
+        className="col-span-3 col-start-1 flex justify-center gap-x-2 xl:col-span-1 xl:justify-self-start"
         onClick={clickPlaybackRate}
       >
         {rateListBack.map((i) => {
@@ -62,14 +62,14 @@ const PlayerActions = (props: PlayerActionsProps) => {
               key={i}
               data-rate={i}
               variant={playbackRate === i ? "default" : "secondary"}
-              className="my-1 cursor-pointer py-1 hover:bg-primary/80 hover:text-primary-foreground/80 md:hidden"
+              className="my-1 cursor-pointer py-1 hover:bg-primary/80 hover:text-primary-foreground/80 xl:hidden"
             >
               {i}
             </Badge>
           );
         })}
       </div>
-      <div className="col-span-3 col-start-1 flex justify-center md:col-span-1 md:col-start-2">
+      <div className="col-span-3 col-start-1 flex justify-center xl:col-span-1 xl:col-start-2">
         <Button size="sm" variant="ghost" disabled={disableActions}>
           <FastForward className="h-4 w-4 rotate-180" />
         </Button>
@@ -114,7 +114,7 @@ const PlayerActions = (props: PlayerActionsProps) => {
         </Button>
       </div>
       <div
-        className="hidden gap-x-2 justify-self-end md:col-start-3 md:flex"
+        className="hidden gap-x-2 justify-self-end xl:col-start-3 xl:flex"
         onClick={clickPlaybackRate}
       >
         {rateListForward.map((i) => {
