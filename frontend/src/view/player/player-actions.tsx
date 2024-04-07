@@ -1,8 +1,17 @@
+"use client";
 import ReactPlayer from "react-player";
 
 import { Button } from "@/components/ui/button";
-import { Play, Pause, RotateCw, FastForward } from "lucide-react";
+import { Play, Pause, RotateCw, FastForward, Volume2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+
+import * as Slider from "@radix-ui/react-slider";
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 type PlayerActionsProps = {
   playerRef: React.RefObject<ReactPlayer>;
@@ -14,6 +23,9 @@ type PlayerActionsProps = {
   playbackRate: number;
   setPlaybackRate: (value: React.SetStateAction<number>) => void;
 
+  volume: number;
+  setVolume: (value: React.SetStateAction<number>) => void;
+
   disableActions: boolean;
 };
 const PlayerActions = (props: PlayerActionsProps) => {
@@ -24,6 +36,8 @@ const PlayerActions = (props: PlayerActionsProps) => {
     setPlaying,
     playbackRate,
     setPlaybackRate,
+    volume,
+    setVolume,
     disableActions,
   } = props;
 
@@ -112,6 +126,36 @@ const PlayerActions = (props: PlayerActionsProps) => {
         >
           <RotateCw className="h-4 w-4" />
         </Button>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={disableActions}
+              className="lg:hidden"
+            >
+              <Volume2 className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="m-0 w-fit bg-secondary p-4">
+            <Slider.Root
+              className="relative flex h-40 w-2 touch-none select-none items-center rounded-full bg-popover"
+              max={1}
+              step={0.05}
+              value={[volume]}
+              onValueChange={(e) => {
+                setVolume(e[0]);
+              }}
+              orientation="vertical"
+            >
+              <Slider.Thumb
+                className="block h-4 w-4 -translate-x-1 rounded-[10px] bg-secondary shadow-primary outline-none ring-1 ring-primary hover:bg-primary/80 focus:outline-none"
+                aria-label="Volume"
+              />
+            </Slider.Root>
+          </PopoverContent>
+        </Popover>
       </div>
       <div
         className="hidden gap-x-2 justify-self-end xl:col-start-3 xl:flex"

@@ -62,8 +62,8 @@ const Player = (props: PlayerProps) => {
   const [playbackRate, setPlaybackRate] = useState(1);
 
   const url = recordInfo[0].shadowingUrl;
-  const title = recordInfo[0].title;
-  const description = recordInfo[0].description;
+
+  const [volume, setVolume] = useState(1);
 
   const isRecording = mediaState === "recording" || mediaState === "paused";
 
@@ -99,6 +99,7 @@ const Player = (props: PlayerProps) => {
               width="100%"
               height="100%"
               controls={true}
+              volume={volume}
               ref={playerRef}
               url={url}
               playing={playing}
@@ -136,6 +137,8 @@ const Player = (props: PlayerProps) => {
             setPlaying={setPlaying}
             playbackRate={playbackRate}
             setPlaybackRate={setPlaybackRate}
+            volume={volume}
+            setVolume={setVolume}
             disableActions={isRecording}
           />
         </div>
