@@ -127,7 +127,7 @@ const PlayerActions = (props: PlayerActionsProps) => {
           <RotateCw className="h-4 w-4" />
         </Button>
 
-        <Popover>
+        <Popover modal={true}>
           <PopoverTrigger asChild>
             <Button
               size="sm"
@@ -150,7 +150,7 @@ const PlayerActions = (props: PlayerActionsProps) => {
               orientation="vertical"
             >
               <Slider.Thumb
-                className="block h-4 w-4 -translate-x-1 rounded-[10px] bg-secondary shadow-primary outline-none ring-1 ring-primary hover:bg-primary/80 focus:outline-none"
+                className="block h-4 w-4 -translate-x-1 rounded-full bg-secondary p-2 shadow-primary outline-none ring-1 ring-primary hover:bg-primary/80 focus:outline-none"
                 aria-label="Volume"
               />
             </Slider.Root>
