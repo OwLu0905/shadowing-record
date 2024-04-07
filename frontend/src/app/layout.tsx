@@ -30,6 +30,10 @@ export default async function RootLayout({
   const session = await auth();
   return (
     <html lang="en" suppressHydrationWarning>
+      <meta
+        name="viewport"
+        content="width-device-width, height=device-height, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"
+      />
       <body
         className={cn("min-h-screen font-sans antialiased", inter.variable)}
       >
