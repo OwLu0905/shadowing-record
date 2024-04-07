@@ -18,7 +18,8 @@ const SearchInput = ({ setMount, setLineHeight }: SearchInputProps) => {
 
     setLineHeight(line);
     const isEmpty =
-      view.dom.childNodes[0].childNodes[0].nodeType !== Node.TEXT_NODE;
+      view.dom.childNodes[0].childNodes[0].nodeType !== Node.TEXT_NODE &&
+      line === 1;
     setEmptyText(isEmpty);
   });
 
