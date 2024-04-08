@@ -2,6 +2,8 @@
 import { useEffect, useRef, useState } from "react";
 import useAudioWaveform from "@/hooks/useAudioWaveform";
 import { CheckedState } from "@radix-ui/react-checkbox";
+import { Button } from "./ui/button";
+import { Pause, PlayIcon, StepForward, StopCircle } from "lucide-react";
 
 type WaveformProps = {
   blobData: string;
@@ -112,7 +114,7 @@ const Waveform = (props: WaveformProps) => {
         );
       }
     };
-  }, [blobData, blob]);
+  }, [blob]);
 
   function stopAudio(sourceNode: AudioBufferSourceNode) {
     return new Promise((resolve, reject) => {
@@ -142,6 +144,7 @@ const Waveform = (props: WaveformProps) => {
   const handleCanvasClick = async (
     event: React.MouseEvent<HTMLElement, MouseEvent>,
   ) => {
+    if (pauseProgressRef.current === true) return;
     if (!canvasRef.current || !audioBuffer) return;
 
     // NOTE: clear
@@ -204,7 +207,8 @@ const Waveform = (props: WaveformProps) => {
             selectedInterval.left -
             selectedInterval.right) /
             (width / pixelRatio)) *
-          audioDuration // sec
+            audioDuration -
+          startTimer // sec
         : audioDuration - startTimer; // sec ,sec
 
       drawProgress({
@@ -228,7 +232,7 @@ const Waveform = (props: WaveformProps) => {
   };
 
   return (
-    <>
+    <div className="mt-4 flex flex-col justify-center">
       <div
         className="relative flex w-full flex-col bg-card data-[recording=true]:animate-sparkup data-[recording=true]:outline data-[recording=true]:outline-red-500"
         onClick={handleCanvasClick}
@@ -261,7 +265,152 @@ const Waveform = (props: WaveformProps) => {
           ></canvas>
         </div>
       </div>
-    </>
+
+      <div className="my-2 flex w-full items-center justify-start px-4">
+        <Button
+          onClick={async (e) => {
+            e.stopPropagation();
+            if (pauseProgressRef.current === false) {
+              return;
+            }
+            if (!canvasRef.current || !audioBuffer) return;
+
+            if (sourceRef.current) {
+              await stopAudio(sourceRef.current)
+                .then((message) => {
+                  console.log("message:", message);
+                })
+                .catch((error) => {
+                  console.error("error", error);
+                });
+            }
+
+            if (audioContext && audioBuffer) {
+              const source = audioContext.createBufferSource();
+              source.buffer = audioBuffer;
+              source.connect(audioContext.destination);
+
+              source.addEventListener(
+                "ended",
+                () => {
+                  console.log("Playback finished.");
+                },
+                { once: true },
+              );
+
+              if (!progressRef.current) return;
+              const width = canvasRef.current.width;
+              const height = canvasRef.current.height;
+              progressRef.current.width = width;
+              progressRef.current.height = height;
+
+              progressRef.current.style.width = canvasRef.current.style.width;
+              progressRef.current.style.height = canvasRef.current.style.height;
+              progressRef.current.style.left = canvasRef.current.style.left;
+
+              const ctx = progressRef.current.getContext("2d")!;
+
+              const audioDuration = audioBuffer.duration; // sec
+
+              const startTime = leftPixelDistanceRef.current ?? 0; // sec
+
+              const triggerTime = performance.now(); // ms
+
+              const startTimer = startTime;
+
+              const playDuration = audioDuration - startTimer; // sec
+
+              pauseProgressRef.current = false;
+
+              drawProgress({
+                showResize,
+                triggerTime,
+                playDuration,
+                startTimer,
+                audioDuration,
+                width,
+                canvas: progressRef.current,
+                ctx,
+                clipRegionRef: clipRegionRef.current,
+                pauseProgressRef,
+                leftPixelDistanceRef,
+                requestIdRef,
+              });
+
+              source.start(0, startTimer, playDuration);
+              sourceRef.current = source;
+            }
+          }}
+          variant={"ghost"}
+          size="sm"
+          className="text-cyan-600 hover:text-cyan-500"
+        >
+          <PlayIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          onClick={async (e) => {
+            e.stopPropagation();
+
+            if (
+              sourceRef.current &&
+              requestIdRef.current &&
+              progressRef.current
+            ) {
+              await stopAudio(sourceRef.current)
+                .then((message) => {
+                  console.log("message:", message);
+                })
+                .catch((error) => {
+                  console.error("error", error);
+                });
+
+              pauseProgressRef.current = true;
+            }
+          }}
+          variant={"ghost"}
+          size="sm"
+          className="text-amber-600 hover:text-amber-500"
+          aria-label="pause audio"
+        >
+          <Pause className="h-4 w-4" />
+        </Button>
+        <Button
+          variant={"ghost"}
+          onClick={async (e) => {
+            e.stopPropagation();
+            if (sourceRef.current) {
+              await stopAudio(sourceRef.current);
+            }
+
+            if (requestIdRef.current) {
+              cancelAnimationFrame(requestIdRef.current);
+            }
+
+            pauseProgressRef.current = null;
+            leftPixelDistanceRef.current = null;
+
+            if (progressRef.current && canvasRef.current) {
+              const progressCtx = progressRef.current.getContext("2d");
+              progressCtx?.clearRect(
+                0,
+                0,
+                canvasRef.current.width,
+                canvasRef.current.height,
+              );
+            }
+
+            if (clipRegionRef.current) {
+              clipRegionRef.current.style["clipPath"] = "none";
+            }
+          }}
+          size="sm"
+          className="text-rose-600 hover:text-rose-500"
+          aria-label="stop audio"
+        >
+          <StopCircle className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
   );
 };
 

@@ -176,6 +176,8 @@ const useAudioWaveform = (props: UseAudioWaveformProps) => {
         cancelAnimationFrame(requestIdRef.current);
       }
 
+      leftPixelDistanceRef.current = null;
+
       ctx?.clearRect(0, 0, canvas.width, canvas.height * 2);
       ctx?.beginPath();
       ctx.lineWidth = 5;
