@@ -47,7 +47,6 @@ const Player = (props: PlayerProps) => {
     playing,
     setPlaying,
     hasWindow,
-    setHasWindow,
     sliderValue,
     setSliderValue,
     mediaState,
@@ -93,7 +92,7 @@ const Player = (props: PlayerProps) => {
   return (
     <>
       <div className="mb-4 w-full">
-        <div className="mb-4 h-[280px]">
+        <div className="mb-4 h-40 sm:h-64 lg:h-[22rem]">
           {hasWindow && (
             <ReactPlayer
               width="100%"

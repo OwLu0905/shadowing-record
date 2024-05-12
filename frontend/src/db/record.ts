@@ -2,7 +2,7 @@
 import * as z from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db/drizzle";
 import { audios, records } from "@/db/schema/schema";
@@ -13,6 +13,7 @@ import {
   deleteS3ObjectList,
   getS3SignedUrlList,
 } from "@/api/s3";
+import { format } from "date-fns";
 
 // NOTE: Create
 export const createRecord = async (data: z.infer<typeof NewRecordSchema>) => {
@@ -41,11 +42,57 @@ export const getRecordByUserId = async (userId: string) => {
       throw new Error("invalid record");
     }
 
-    return await db
-      .select()
+    const query = await db
+      .select({
+        month: sql<string>`DATE_TRUNC('month', ${records.createdAt})`.as(
+          "month",
+        ),
+
+        recordId: records.recordId,
+        id: records.recordId,
+        title: records.title,
+        thumbnailUrl: records.thumbnailUrl,
+        createdAt: records.createdAt,
+      })
       .from(records)
       .where(eq(records.userId, userId))
-      .orderBy(desc(records.createdAt));
+      .orderBy(
+        desc(records.createdAt),
+        sql<string>`DATE_TRUNC('month', ${records.createdAt})`,
+      );
+
+    const groupByMonth = query.reduce<
+      {
+        month: string;
+        data: {
+          month: string;
+          recordId: string;
+          title: string;
+          thumbnailUrl: string | null;
+          createdAt: Date;
+        }[];
+      }[]
+    >((acc, current) => {
+      const month = format(current.month, "yyyy-MM");
+
+      const existingMonthIndex = acc.findIndex(
+        (i) => format(i.month, "yyyy-MM") === month,
+      );
+
+      if (existingMonthIndex === -1) {
+        acc.push({
+          month: month,
+          data: [current],
+        });
+        return acc;
+      }
+
+      acc[existingMonthIndex].data.push(current);
+
+      return acc;
+    }, []);
+
+    return groupByMonth;
   } catch (err) {
     console.log(err, "cant get record");
 

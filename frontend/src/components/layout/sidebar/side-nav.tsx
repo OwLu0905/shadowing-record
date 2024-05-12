@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useRecordListsQuery } from "@/api/record/useRecordLists";
 import { useQueryClient } from "@tanstack/react-query";
@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 
 import {
@@ -24,18 +25,19 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 
+import toast from "react-hot-toast";
 import { deleteaRecordById } from "@/db/record";
 import { cn } from "@/lib/utils";
-import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
 import { format } from "date-fns";
+
 import {
+  CheckIcon,
   EllipsisVertical,
   Headphones,
   MenuIcon,
   Plus,
   Trash2,
 } from "lucide-react";
-import toast from "react-hot-toast";
 
 type SideNavProps = {
   userId: string;
@@ -96,73 +98,91 @@ const SideNav = ({ userId }: SideNavProps) => {
         className="mx-4 flex flex-col items-start gap-y-2 transition-opacity duration-300 ease-in data-[expand=true]:visible data-[expand=false]:invisible data-[expand=false]:opacity-0 data-[expand=true]:opacity-100"
         data-expand={open}
       >
-        {recordLists?.map((i) => {
-          const formatDate = format(new Date(i.createdAt), "yyyy-MM-dd hh:mm");
+        {recordLists?.map((monthData) => {
           return (
-            <li
-              key={i.recordId}
-              tabIndex={0}
-              className={cn(
-                "group/item flex w-full rounded-full px-4 py-1.5 font-normal text-secondary-foreground transition-colors duration-300 ease-in-out hover:bg-primary/10 [&:has([data-state=open])]:bg-primary/10",
-                i.recordId === params.itemId ? "bg-accent" : "",
-              )}
-            >
-              <HoverCard openDelay={500}>
-                <HoverCardTrigger asChild>
-                  <div className="flex w-full items-center truncate">
-                    <Headphones className="h-4 w-4" />
-                    <Link
-                      href={`/records/${i.recordId}`}
-                      className={"mx-4 w-full flex-1 truncate py-1 text-xs"}
-                    >
-                      {i.title}
-                    </Link>
-                  </div>
-                </HoverCardTrigger>
-                <HoverCardContent
-                  side="right"
-                  hideWhenDetached={true}
-                  className="z-20 mx-4 w-60 bg-secondary py-2 shadow-lg"
-                >
-                  <div className="flex items-center justify-center space-x-4">
-                    {i.thumbnailUrl && (
-                      <img
-                        src={i.thumbnailUrl}
-                        alt={i.title}
-                        className="h-20 w-20 rounded-xl object-scale-down py-2"
-                      />
+            <React.Fragment key={monthData.month}>
+              <div className="mb-2 mt-4 flex w-full items-center justify-between px-4 py-1 text-sm font-semibold text-muted-foreground shadow-card">
+                <span>{monthData.month}</span>
+                <div className="flex items-center gap-x-2">
+                  <CheckIcon className="h-4 w-4 text-emerald-500" />
+                  <div className="font-light">{monthData.data.length}</div>
+                </div>
+              </div>
+              {monthData?.data?.map((i) => {
+                const formatDate = format(
+                  new Date(i.createdAt),
+                  "yyyy-MM-dd hh:mm",
+                );
+                return (
+                  <li
+                    key={i.recordId}
+                    tabIndex={0}
+                    className={cn(
+                      "group/item flex w-full rounded-full px-4 font-normal text-secondary-foreground transition-colors duration-300 ease-in-out hover:bg-primary/10 [&:has([data-state=open])]:bg-primary/10",
+                      i.recordId === params.itemId ? "bg-accent" : "",
                     )}
-                    <div className="flex shrink-0 flex-col items-center text-xs font-semibold">
-                      <p>{formatDate.split(" ")[0]}</p>
-                      <p>{formatDate.split(" ")[1]}</p>
-                    </div>
-                  </div>
-                </HoverCardContent>
-              </HoverCard>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger className="group-edit invisible flex items-center rounded-full bg-transparent hover:bg-primary/20 active:visible group-hover/item:visible group-focus:visible data-[state=open]:visible data-[state=open]:bg-primary/20">
-                  <EllipsisVertical className="h-6 w-6 rounded-full p-1" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent side="right">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem>
-                      <div
-                        className="flex cursor-pointer items-center text-red-500"
-                        onClick={() => {
-                          onDeleteValue.current = i.recordId;
-                          setWarning(true);
-                        }}
+                  >
+                    <HoverCard openDelay={500}>
+                      <HoverCardTrigger asChild>
+                        <div className="flex w-full items-center truncate">
+                          <Headphones className="h-4 w-4" />
+                          <Link
+                            href={`/records/${i.recordId}`}
+                            className={
+                              "mx-4 w-full flex-1 truncate py-2.5 text-xs"
+                            }
+                          >
+                            {i.title}
+                          </Link>
+                        </div>
+                      </HoverCardTrigger>
+                      <HoverCardContent
+                        side="right"
+                        hideWhenDetached={true}
+                        className="z-20 mx-4 w-60 bg-secondary py-2 shadow-lg"
                       >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </li>
+                        <div className="flex items-center justify-center space-x-4">
+                          {i.thumbnailUrl && (
+                            <img
+                              src={i.thumbnailUrl}
+                              alt={i.title}
+                              className="h-20 w-20 rounded-xl object-scale-down py-2"
+                            />
+                          )}
+                          <div className="flex shrink-0 flex-col items-center text-xs font-semibold">
+                            <p>{formatDate.split(" ")[0]}</p>
+                            <p>{formatDate.split(" ")[1]}</p>
+                          </div>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="group-edit invisible flex items-center rounded-full bg-transparent hover:bg-primary/20 active:visible group-hover/item:visible group-focus:visible data-[state=open]:visible data-[state=open]:bg-primary/20">
+                        <EllipsisVertical className="h-5 w-5 rounded-full" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent side="right">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuGroup>
+                          <DropdownMenuItem>
+                            <div
+                              className="flex cursor-pointer items-center text-red-500"
+                              onClick={() => {
+                                onDeleteValue.current = i.recordId;
+                                setWarning(true);
+                              }}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </div>
+                          </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </li>
+                );
+              })}
+            </React.Fragment>
           );
         })}
       </ul>

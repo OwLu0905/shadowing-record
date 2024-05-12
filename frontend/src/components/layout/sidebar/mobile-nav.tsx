@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRecordListsQuery } from "@/api/record/useRecordLists";
 import { DrawerClose } from "@/components/ui/drawer";
-import { Headphones, Plus } from "lucide-react";
+import { CheckIcon, Headphones, Plus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -15,7 +15,7 @@ type MobileNavProps = {
 
 const MobileNav = (props: MobileNavProps) => {
   const { userId } = props;
-  const { data: recordLists, isLoading } = useRecordListsQuery(userId);
+  const { data: recordLists } = useRecordListsQuery(userId);
   const router = useRouter();
   return (
     <aside className="mt-4 h-full">
@@ -29,32 +29,48 @@ const MobileNav = (props: MobileNavProps) => {
       </DrawerClose>
 
       <ScrollArea className="mx-4 flex h-[80dvh] flex-col items-start gap-y-2 truncate">
-        {recordLists?.map((i) => {
-          const formatDate = format(new Date(i.createdAt), "yyyy-MM-dd hh:mm");
+        {recordLists?.map((monthData) => {
           return (
-            <div
-              key={i.recordId}
-              className={cn(
-                "group/item flex w-full rounded-full px-4 py-1.5 font-normal text-secondary-foreground transition-colors duration-300 ease-in-out hover:bg-primary/10 ",
-              )}
-            >
-              <Link
-                href={`/records/${i.recordId}`}
-                className={"w-full flex-1 py-1 text-xs"}
-              >
-                <DrawerClose
-                  asChild
-                  className="flex w-full items-center truncate"
-                >
-                  <div>
-                    <Headphones className="h-4 w-4" />
-                    <div className="mx-4 w-full max-w-[12rem]  flex-1 flex-grow space-y-2 truncate py-1 text-xs sm:max-w-[16rem]">
-                      <p className="truncate">{i.title}</p>
-                      <p className="text-foreground">{formatDate}</p>
-                    </div>
+            <div key={monthData.month}>
+              <div className="mb-2 mt-4 flex w-full items-center justify-between px-4 py-1 text-sm font-semibold text-muted-foreground shadow-card">
+                <span>{monthData.month}</span>
+                <div className="flex items-center gap-x-2">
+                  <CheckIcon className="h-4 w-4 text-emerald-500" />
+                  <div className="font-light">{monthData.data.length}</div>
+                </div>
+              </div>
+              {monthData?.data?.map((i) => {
+                const formatDate = format(
+                  new Date(i.createdAt),
+                  "yyyy-MM-dd hh:mm",
+                );
+                return (
+                  <div
+                    key={i.recordId}
+                    className={cn(
+                      "group/item flex w-full rounded-full px-4 py-1.5 font-normal text-secondary-foreground transition-colors duration-300 ease-in-out hover:bg-primary/10 ",
+                    )}
+                  >
+                    <Link
+                      href={`/records/${i.recordId}`}
+                      className={"w-full flex-1 py-1 text-xs"}
+                    >
+                      <DrawerClose
+                        asChild
+                        className="flex w-full items-center truncate"
+                      >
+                        <div>
+                          <Headphones className="h-4 w-4" />
+                          <div className="mx-4 w-full max-w-[12rem]  flex-1 flex-grow space-y-2 truncate py-1 text-xs sm:max-w-[16rem]">
+                            <p className="truncate">{i.title}</p>
+                            <p className="text-foreground">{formatDate}</p>
+                          </div>
+                        </div>
+                      </DrawerClose>
+                    </Link>
                   </div>
-                </DrawerClose>
-              </Link>
+                );
+              })}
             </div>
           );
         })}
