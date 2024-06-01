@@ -56,20 +56,22 @@ const RecordUplaod = (props: RecordSearchProps) => {
     <>
       <div
         className={cn(
-          "mx-auto flex w-full max-w-2xl flex-col items-start justify-between gap-4 py-4  md:flex-row",
+          "mx-auto flex w-full max-w-2xl flex-col items-start justify-between gap-4 md:flex-row",
         )}
       >
         <div
           {...getRootProps()}
           className={cn(
-            "border-popper group w-full cursor-pointer border-2 border-dashed py-12",
-            "data-[drag=active]:border-popper",
+            "group w-full cursor-pointer border-2 border-dashed border-card py-12",
+            "data-[drag=active]:border-secondary",
           )}
           data-drag={isDragActive ? "active" : "inactive"}
         >
           <input {...getInputProps()} className="p-8" />
-          <div className="flex flex-col items-center gap-2">
-            <span>Drag your mp3 file here, or click to select files</span>
+          <div className="flex flex-col items-center gap-4">
+            <span className="hidden md:block">
+              Drag your mp3 file here, or click to select files
+            </span>
             <Button
               className="w-fit cursor-pointer"
               size="sm"
@@ -78,11 +80,6 @@ const RecordUplaod = (props: RecordSearchProps) => {
               上傳檔案
             </Button>
           </div>
-        </div>
-        <div>
-          {acceptedFiles.map((i) => (
-            <div key={i.name}>{i.name}</div>
-          ))}
         </div>
       </div>
     </>
