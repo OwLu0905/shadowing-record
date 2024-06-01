@@ -17,6 +17,7 @@ import SubmitButton from "@/view/records/search/submit-button";
 
 import { type YoutubeOEmbedResponse } from "@/api/youtube";
 import { type UseMutationResult } from "@tanstack/react-query";
+import { AudioInfoType } from "@/app/(protect)/records/page";
 
 const shiftEnterPlugin = keymap(shiftEnterKeyMap);
 
@@ -27,10 +28,11 @@ type RecordSearchProps = {
     string,
     unknown
   >;
-  setUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
+
+  setAudioInfo: React.Dispatch<React.SetStateAction<AudioInfoType | undefined>>;
 };
 const RecordSearch = (props: RecordSearchProps) => {
-  const { ytMutate, setUrl } = props;
+  const { ytMutate, setAudioInfo } = props;
   const [mount, setMount] = useState<HTMLElement | null>(null);
 
   const [line, setLineHeight] = useState(0);
@@ -63,7 +65,7 @@ const RecordSearch = (props: RecordSearchProps) => {
               mount={mount}
               state={state}
               ytMutate={ytMutate}
-              setUrl={setUrl}
+              setAudioInfo={setAudioInfo}
             />
           </div>
         </ProseMirror>

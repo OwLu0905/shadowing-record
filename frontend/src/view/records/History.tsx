@@ -26,7 +26,6 @@ type HistoryProps = {
   recordId: string;
 };
 
-// TODO: move history to client component ( use useQuery to cache the data)
 const History = (props: HistoryProps) => {
   const { recordId } = props;
   const { data, isLoading } = useAudioListQuery(recordId);

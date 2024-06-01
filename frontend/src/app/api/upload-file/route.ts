@@ -9,8 +9,6 @@ import { v4 as uuid } from "uuid";
 
 import { EnvParseConfig } from "@/util/env.schema";
 import { auth } from "@/lib/auth";
-import { recordUuidSchema } from "@/schema/item-params";
-import { createAudio } from "@/db/record";
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
@@ -22,14 +20,6 @@ export async function POST(req: NextRequest) {
 
   try {
     const data = formData.get("file") as File;
-    const recordId = formData.get("recordId") as string;
-    const startTime = formData.get("startTime") as string;
-    const endTime = formData.get("endTime") as string;
-
-    const recordIdValid = recordUuidSchema.safeParse(recordId);
-    if (!recordIdValid.success) {
-      return new Response("invalid record id", { status: 400 });
-    }
 
     const s3 = new S3Client({
       credentials: {
@@ -50,30 +40,25 @@ export async function POST(req: NextRequest) {
       .slice(0, 15);
 
     const saveUuid = uuid();
+
+    const userId = user?.user?.id;
     const filename = `${formattedTimestamp}_${saveUuid}`;
+    const key = `user-upload/${userId}/${filename}`;
+
     const params: PutObjectCommandInput = {
       Bucket: EnvParseConfig.BUCKET_NAME,
-      Key: `${recordId}/${filename}`,
+      Key: key,
       Body: buffer,
       ContentType: fileType,
     };
 
-    const userId = user?.user?.id;
-
     const command = new PutObjectCommand(params);
-
-    // TODO: check performance
     await s3.send(command);
 
-    await createAudio({
-      userId: userId,
-      recordId: recordIdValid.data,
-      audioUrl: `${filename}` as string,
-      startSeconds: startTime,
-      endSeconds: endTime,
+    return Response.json({
+      message: "File uploaded successfully",
+      data: { url: key },
     });
-
-    return Response.json({ message: "File uploaded successfully" });
   } catch (error) {
     console.log(error);
     return new Response("error", { status: 400 });

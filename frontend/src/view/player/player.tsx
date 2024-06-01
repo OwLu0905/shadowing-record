@@ -38,7 +38,7 @@ type PlayerProps = {
   onSyncStop: () => void;
 
   forms: UseFormReturn<AudioSubmitForm, any, undefined>;
-  recordInfo: RecordItem[];
+  recordInfo: RecordItem;
 };
 
 const Player = (props: PlayerProps) => {
@@ -60,7 +60,7 @@ const Player = (props: PlayerProps) => {
 
   const [playbackRate, setPlaybackRate] = useState(1);
 
-  const url = recordInfo[0].shadowingUrl;
+  const url = recordInfo.shadowingUrl;
 
   const [volume, setVolume] = useState(1);
 

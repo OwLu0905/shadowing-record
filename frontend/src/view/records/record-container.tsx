@@ -14,7 +14,7 @@ import { type RecordItem } from "@/db/schema/type";
 import { format } from "date-fns";
 
 type RecordContainerProps = {
-  recordInfo: RecordItem[];
+  recordInfo: RecordItem;
 };
 
 export type AudioSubmitForm = {
@@ -96,12 +96,12 @@ const RecordContainer = (props: RecordContainerProps) => {
       <section className="container flex flex-col items-center gap-1 px-4 pt-8 md:px-10 lg:flex-row lg:gap-x-4">
         <div className="flex w-full flex-col truncate">
           <h2 className="w-full truncate text-xl font-semibold md:text-2xl">
-            {recordInfo[0].title}
+            {recordInfo.title}
           </h2>
-          <p>{recordInfo[0].description}</p>
+          <p>{recordInfo.description}</p>
         </div>
         <p className="ml-auto shrink-0 text-xs font-medium text-foreground/50 md:text-sm">
-          {format(recordInfo[0].createdAt, "yyyy-MM-dd")}
+          {format(recordInfo.createdAt, "yyyy-MM-dd")}
         </p>
       </section>
       <section className="container flex flex-col px-4 py-6 md:px-10 md:py-10 lg:flex-row lg:gap-x-6">
@@ -139,7 +139,7 @@ const RecordContainer = (props: RecordContainerProps) => {
       <WarningDialog
         show={warning}
         handleClose={setWarning}
-        label={"test"}
+        label={"Warning"}
         title="Warning: Unsaved Data"
         description="You have unsaved changes. Do you want to continue editing or discard the changes and start new?"
         onConfirm={onConfirmSyncRecord}

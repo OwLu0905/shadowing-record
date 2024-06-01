@@ -1,8 +1,6 @@
 import {
   DeleteObjectCommand,
-  DeleteObjectCommandInput,
   DeleteObjectsCommand,
-  DeleteObjectsCommandInput,
   GetObjectCommand,
   ListObjectsV2Command,
   S3Client,
@@ -100,4 +98,26 @@ export async function deleteS3ObjectList(path: string) {
   } catch (error) {
     throw error;
   }
+}
+
+export async function getS3SignedItem(data: { audioUrl: string }) {
+  const s3 = new S3Client({
+    credentials: {
+      accessKeyId: EnvParseConfig.AWS_ACCESS_KEY_ID,
+      secretAccessKey: EnvParseConfig.AWS_SECRET_ACCESS_KEY,
+    },
+    region: EnvParseConfig.BUCKET_REGION,
+  });
+
+  const getPresignedUrl = async (audioUrl: string) => {
+    const command = new GetObjectCommand({
+      Bucket: EnvParseConfig.BUCKET_NAME,
+      Key: audioUrl,
+    });
+    return getSignedUrl(s3, command, { expiresIn: 3600 });
+  };
+
+  const presignedUrls = await getPresignedUrl(data.audioUrl);
+
+  return presignedUrls;
 }

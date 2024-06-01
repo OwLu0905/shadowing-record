@@ -3,17 +3,16 @@ import React, { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 import { ClimbingBoxLoader } from "react-spinners";
 
-import { YoutubeOEmbedResponse } from "@/api/youtube";
 import SubmitForm from "@/view/records/search/submit-form";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AudioInfoType } from "@/app/(protect)/records/page";
 
 type PreviewVideoProps = {
-  data: YoutubeOEmbedResponse | undefined;
-  url?: string;
+  data: AudioInfoType | undefined;
 };
 
 const PreviewVideo = (props: PreviewVideoProps) => {
-  const { data, url } = props;
+  const { data } = props;
   const [hasWindow, setHasWindow] = useState(false);
 
   useEffect(() => {
@@ -22,7 +21,7 @@ const PreviewVideo = (props: PreviewVideoProps) => {
     }
   }, [setHasWindow]);
 
-  if (!data || !url)
+  if (!data || !data.url)
     return (
       <div className="mx-auto mb-4 w-full max-w-xl">
         <Skeleton className="h-60 w-full" />
@@ -46,13 +45,13 @@ const PreviewVideo = (props: PreviewVideoProps) => {
               width="100%"
               height={"300px"}
               controls={true}
-              url={url}
+              url={data.url}
             />
           )}
         </div>
 
         <div className="w-full md:w-1/2">
-          <SubmitForm data={data} url={url} />
+          <SubmitForm data={data} />
         </div>
       </div>
     </div>

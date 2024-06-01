@@ -9,6 +9,7 @@ import { convertToYoutubeIdUrl } from "@/lib/utils";
 import { useEditorEventCallback } from "@nytimes/react-prosemirror";
 import { EditorState } from "prosemirror-state";
 import { YOUTUBE_MOBILE_DOMAIN } from "@/lib/constants";
+import { AudioInfoType } from "@/app/(protect)/records/page";
 
 type SubmitButtonProps = {
   mount: HTMLElement | null;
@@ -19,12 +20,11 @@ type SubmitButtonProps = {
     string,
     unknown
   >;
-
-  setUrl: React.Dispatch<React.SetStateAction<string | undefined>>;
+  setAudioInfo: React.Dispatch<React.SetStateAction<AudioInfoType | undefined>>;
 };
 
 const SubmitButton = (props: SubmitButtonProps) => {
-  const { mount, state, ytMutate, setUrl } = props;
+  const { mount, state, ytMutate, setAudioInfo } = props;
 
   const onClick = useEditorEventCallback((view) => {
     const tr = state.tr.delete(0, state.doc.content.size);
@@ -42,7 +42,6 @@ const SubmitButton = (props: SubmitButtonProps) => {
       variant={"ghost"}
       onClick={async () => {
         if (!mount?.innerHTML) return;
-        // TODO: use zod url to check
         const paragra = mount.children[0] as HTMLParagraphElement;
 
         const checkUrlSchema = z.string().url();
@@ -70,12 +69,17 @@ const SubmitButton = (props: SubmitButtonProps) => {
           const youtubeId = youtubeIdValid.data;
           const validUrl = convertToYoutubeIdUrl(youtubeId);
 
-          const data = await ytMutate.mutateAsync(validUrl, {
-            onSuccess(data, variables, context) {
-              setUrl(url.toString());
+          await ytMutate.mutateAsync(validUrl, {
+            onSuccess(data) {
+              setAudioInfo({
+                url: url.toString(),
+                title: data?.title ?? "",
+                provider_name: data?.provider_name ?? "YouTube",
+                thumbnail_url: data?.thumbnail_url ?? "",
+              });
               onClick();
             },
-            onError(error, variables, context) {
+            onError(error) {
               console.log(error);
             },
           });

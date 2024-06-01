@@ -13,6 +13,8 @@ import {
   QueryClient,
   dehydrate,
 } from "@tanstack/react-query";
+import { getS3SignedItem } from "@/api/s3";
+import { ShadowingType } from "@/type/kinds";
 
 const RecordItemPage = async ({ params }: { params: { itemId: string } }) => {
   const user = await auth();
@@ -42,12 +44,23 @@ const RecordItemPage = async ({ params }: { params: { itemId: string } }) => {
     redirect("/records");
   }
 
+  let audio_url = data[0].shadowingUrl;
+
+  if (data[0].shadowingType === ShadowingType.File) {
+    audio_url = await getS3SignedItem({ audioUrl: data[0].shadowingUrl });
+  }
+
+  const newData = {
+    ...data[0],
+    shadowingUrl: audio_url,
+  };
+
   return (
     <>
-      <RecordContainer recordInfo={data} />
+      <RecordContainer recordInfo={newData} />
       <section className="container mx-auto flex-col md:flex">
         <HydrationBoundary state={dehydrate(queryClient)}>
-          <History recordId={data[0].recordId} />
+          <History recordId={newData.recordId} />
         </HydrationBoundary>
       </section>
     </>

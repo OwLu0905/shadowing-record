@@ -53,7 +53,7 @@ type RecordProps = {
     userId: string;
     recordId: string;
     createdAt: Date;
-  }[];
+  };
   startTime: number;
   endTime: number;
 };
@@ -103,7 +103,7 @@ const Record = (props: RecordProps) => {
     audioBlob: blobData,
   });
 
-  const [isPending, startTransitio] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const queryClient = useQueryClient();
 
@@ -175,45 +175,44 @@ const Record = (props: RecordProps) => {
     });
   }
 
-  async function saveAudioToFile(
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) {
-    e.preventDefault();
+  async function saveAudioToFile() {
     if (!data.blob) return;
 
     const formData = new FormData();
     formData.append("file", data.blob);
-    formData.append("recordId", recordInfo[0].recordId);
-    formData.append("startTime", `${startTime}`);
-    formData.append("endTime", `${endTime}`);
+    formData.append("recordId", recordInfo.recordId);
+    formData.append("startTime", `${Math.round(startTime)}`);
+    formData.append("endTime", `${Math.round(endTime)}`);
 
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        if (sourceRef.current) {
-          sourceRef.current.stop();
-        }
-        cleanup();
-        clearnAudioWave();
-        forms.reset();
-        if (requestIdRef.current) {
-          cancelAnimationFrame(requestIdRef.current);
-        }
-        toast.success("Audio uploaded successfully");
-
-        queryClient.invalidateQueries({
-          queryKey: [recordInfo[0].recordId, "history"],
+    startTransition(async () => {
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
         });
-      } else {
-        toast.error("Error uploading audio");
+
+        if (response.ok && response.status < 400) {
+          if (sourceRef.current) {
+            sourceRef.current.stop();
+          }
+          cleanup();
+          clearnAudioWave();
+          forms.reset();
+          if (requestIdRef.current) {
+            cancelAnimationFrame(requestIdRef.current);
+          }
+          toast.success("Audio uploaded successfully");
+
+          queryClient.invalidateQueries({
+            queryKey: [recordInfo.recordId, "history"],
+          });
+        } else {
+          toast.error("Error uploading audio");
+        }
+      } catch (error) {
+        console.error("Error uploading audio:", error);
       }
-    } catch (error) {
-      console.error("Error uploading audio:", error);
-    }
+    });
   }
 
   const handleCanvasClick = async (
@@ -517,9 +516,8 @@ const Record = (props: RecordProps) => {
           type="button"
           className="w-fit self-end"
           onClick={(e) => {
-            startTransitio(() => {
-              saveAudioToFile(e);
-            });
+            e.preventDefault();
+            saveAudioToFile();
           }}
           disabled={isPending || !audioBuffer}
         >

@@ -14,6 +14,7 @@ import {
   getS3SignedUrlList,
 } from "@/api/s3";
 import { format } from "date-fns";
+import { ShadowingType } from "@/type/kinds";
 
 // NOTE: Create
 export const createRecord = async (data: z.infer<typeof NewRecordSchema>) => {
@@ -126,6 +127,16 @@ export const deleteaRecordById = async (recordId: string) => {
     const recordUuidValid = recordUuidSchema.safeParse(recordId);
     if (!recordUuidValid.success) {
       throw new Error("invalid audios data");
+    }
+
+    const record = await db
+      .select()
+      .from(records)
+      .where(eq(records.recordId, recordId));
+
+    if (record[0].shadowingType === ShadowingType.File) {
+      const s3Path = record[0].shadowingUrl;
+      await deleteS3ObjectItem(s3Path);
     }
 
     await db.delete(records).where(eq(records.recordId, recordId));

@@ -17,19 +17,19 @@ import {
 import { NewRecordFormSchema } from "@/schema/records";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import { YoutubeOEmbedResponse } from "@/api/youtube";
 import { Button } from "@/components/ui/button";
 import { SparkleIcon } from "lucide-react";
 import { createRecord } from "@/db/record";
-import { ShadowingTypeMap } from "@/type/kinds";
+import { ShadowingType, ShadowingTypeMap } from "@/type/kinds";
 import { useQueryClient } from "@tanstack/react-query";
+import { AudioInfoType } from "@/app/(protect)/records/page";
 
-type SubmitForm = {
-  data: YoutubeOEmbedResponse;
-  url: string;
+type SubmitFormProps = {
+  data: AudioInfoType;
 };
-const SubmitForm = (props: SubmitForm) => {
-  const { data, url } = props;
+
+const SubmitForm = (props: SubmitFormProps) => {
+  const { data } = props;
   const session = useSession();
   const user = session.data?.user;
   const [isPending, startTransition] = useTransition();
@@ -46,24 +46,69 @@ const SubmitForm = (props: SubmitForm) => {
     values: {
       title: data.title,
       description: "",
-      shadowingUrl: url,
+      shadowingUrl: data.url,
       shadowingType: data["provider_name"],
     },
   });
 
+  async function uploadFileToS3(data: Blob | null) {
+    if (!data) return;
+
+    const formData = new FormData();
+    formData.append("file", data);
+
+    try {
+      const response = await fetch("/api/upload-file", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const json: { message: string; data: { url: string } } =
+          await response.json();
+
+        return json.data.url;
+      }
+    } catch (err) {
+      console.log("Can't upload this file");
+    }
+  }
+
   async function onSubmit(value: z.infer<typeof NewRecordFormSchema>) {
     const type = ShadowingTypeMap[value.shadowingType];
-    startTransition(() => {
-      if (!user?.id) return;
-      createRecord({
-        ...value,
-        shadowingType: type,
-        userId: user.id,
-        thumbnailUrl: data.thumbnail_url,
-      });
-      queryClient.invalidateQueries({ queryKey: [user.id, "records"] });
-      console.log("invalidateQueries");
-    });
+    switch (type) {
+      case ShadowingType.File: {
+        startTransition(async () => {
+          if (!user?.id || !data.blob) return;
+          const url = await uploadFileToS3(data.blob);
+          if (url) {
+            await createRecord({
+              ...value,
+              shadowingUrl: url,
+              shadowingType: type,
+              userId: user.id,
+              thumbnailUrl: data.thumbnail_url,
+            });
+
+            queryClient.invalidateQueries({ queryKey: [user.id, "records"] });
+          }
+        });
+        break;
+      }
+      case ShadowingType.YouTube: {
+        startTransition(() => {
+          if (!user?.id) return;
+          createRecord({
+            ...value,
+            shadowingType: type,
+            userId: user.id,
+            thumbnailUrl: data.thumbnail_url,
+          });
+          queryClient.invalidateQueries({ queryKey: [user.id, "records"] });
+        });
+        break;
+      }
+    }
   }
 
   return (
