@@ -17,19 +17,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Waveform from "@/components/waveform";
 import WarningDialog from "@/components/common/warn-dialog";
 
-import { format } from "date-fns";
-import { PlayIcon, Trash2 } from "lucide-react";
-import { deleteaAudioById } from "@/db/record";
+import { type SliderState } from "@/view/records/record-container";
+
 import toast from "react-hot-toast";
+import { format } from "date-fns";
+import { CircleCheckBig, Clock2, Trash2 } from "lucide-react";
+import { deleteaAudioById } from "@/db/record";
 
 type HistoryProps = {
   recordId: string;
+  setSliderValue: React.Dispatch<React.SetStateAction<SliderState>>;
 };
 
 const History = (props: HistoryProps) => {
-  const { recordId } = props;
+  const { recordId, setSliderValue } = props;
   const { data, isLoading } = useAudioListQuery(recordId);
   const [warning, setWarning] = useState(false);
+  const [applyTime, setApplyTime] = useState<number | undefined>(undefined);
   const queryClient = useQueryClient();
   const audioIdRef = useRef<number | null>(null);
 
@@ -47,100 +51,119 @@ const History = (props: HistoryProps) => {
   }
 
   return (
-    <div className="pb-12">
-      <h2 className="text-lg font-semibold md:text-2xl">Recording History</h2>
-      <div className="mt-4 overflow-hidden rounded-lg border shadow-sm md:block">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-1/4">Date</TableHead>
-              <TableHead className="">start</TableHead>
-              <TableHead className="">end</TableHead>
-              <TableHead className="w-[600px]">Waveform</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          {!data || isLoading ? (
-            <TableBody>
+    <section className="container mx-auto flex-col md:flex">
+      <div className="pb-12">
+        <h2 className="text-lg font-semibold md:text-2xl">Recording History</h2>
+        <div className="mt-4 overflow-hidden rounded-lg border shadow-sm md:block">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell>
-                  <Skeleton className="h-12 w-full" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-12 w-full" />
-                </TableCell>
-                <TableCell className="md:table-cell">
-                  <Skeleton className="h-12 w-full" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-12 w-full" />
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-x-2">
-                    <Skeleton className="h-5 w-5 rounded-full" />
-                    <Skeleton className="h-5 w-5 rounded-full" />
-                  </div>
-                </TableCell>
+                <TableHead className="w-1/4">Date</TableHead>
+                <TableHead className="">start</TableHead>
+                <TableHead className="">end</TableHead>
+                <TableHead className="w-[600px]">Waveform</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            </TableBody>
-          ) : (
-            data.map((item) => {
-              const formatDate = format(
-                new Date(item.createdAt),
-                "yyyy-MM-dd hh:mm",
-              );
-              return (
-                <TableBody key={item.audioUrl}>
-                  <TableRow>
-                    <TableCell>{formatDate}</TableCell>
-                    <TableCell>{item.startSeconds}</TableCell>
-                    <TableCell className="md:table-cell">
-                      {item.endSeconds}
-                    </TableCell>
-                    <TableCell>
-                      <Waveform blobData={`${item.audioUrl}`} />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          className="rounded-full"
-                        >
-                          <PlayIcon className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          className="rounded-full"
-                          onClick={() => {
-                            audioIdRef.current = item.audioId;
-                            setWarning(true);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              );
-            })
-          )}
-        </Table>
-      </div>
+            </TableHeader>
+            {!data || isLoading ? (
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    <Skeleton className="h-12 w-full" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-12 w-full" />
+                  </TableCell>
+                  <TableCell className="md:table-cell">
+                    <Skeleton className="h-12 w-full" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-12 w-full" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-x-2">
+                      <Skeleton className="h-5 w-5 rounded-full" />
+                      <Skeleton className="h-5 w-5 rounded-full" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            ) : (
+              data.map((item, idx) => {
+                const formatDate = format(
+                  new Date(item.createdAt),
+                  "yyyy-MM-dd hh:mm",
+                );
+                return (
+                  <TableBody key={item.audioUrl}>
+                    <TableRow>
+                      <TableCell>{formatDate}</TableCell>
+                      <TableCell>{item.startSeconds}</TableCell>
+                      <TableCell className="md:table-cell">
+                        {item.endSeconds}
+                      </TableCell>
+                      <TableCell>
+                        <Waveform blobData={`${item.audioUrl}`} />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            className="rounded-full"
+                            onClick={() => {
+                              audioIdRef.current = item.audioId;
+                              setWarning(true);
+                            }}
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            className="rounded-full"
+                            disabled={applyTime === idx}
+                            onClick={() => {
+                              setSliderValue([
+                                item.startSeconds,
+                                item.endSeconds,
+                              ]);
+                              if (item.audioId !== undefined) {
+                                setApplyTime(idx);
+                              }
+                              setTimeout(() => {
+                                setApplyTime(undefined);
+                              }, 1200);
+                            }}
+                          >
+                            {applyTime === idx ? (
+                              <CircleCheckBig className="h-5 w-5 stroke-[2px] text-green-500 dark:text-green-400 " />
+                            ) : (
+                              <Clock2 className="h-5 w-5" />
+                            )}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                );
+              })
+            )}
+          </Table>
+        </div>
 
-      <WarningDialog
-        show={warning}
-        handleClose={setWarning}
-        label={"Delete"}
-        title="Warning: Delete Audio"
-        description="Do you want to continue delete or return?"
-        onConfirm={onConfirmDeleteAudio}
-      />
-    </div>
+        <WarningDialog
+          show={warning}
+          handleClose={setWarning}
+          label={"Delete"}
+          title="Warning: Delete Audio"
+          description="Do you want to continue delete or return?"
+          onConfirm={onConfirmDeleteAudio}
+        />
+      </div>
+    </section>
   );
 };
 

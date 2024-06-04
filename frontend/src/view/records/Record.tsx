@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
-import { AlertCircle, Trash2 } from "lucide-react";
+import { AlertCircle, Loader2, Trash2 } from "lucide-react";
 import { throttle } from "@/util/throttle";
 import { THROTTLE_MOUSE_MOVE_RESIZE } from "@/lib/constants";
 import { UseFormReturn } from "react-hook-form";
@@ -512,17 +512,24 @@ const Record = (props: RecordProps) => {
           />
         </div>
 
-        <Button
-          type="button"
-          className="w-fit self-end"
-          onClick={(e) => {
-            e.preventDefault();
-            saveAudioToFile();
-          }}
-          disabled={isPending || !audioBuffer}
-        >
-          Save
-        </Button>
+        {isPending ? (
+          <Button type="button" className="w-fit self-end" disabled={isPending}>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Saving
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            className="w-fit self-end"
+            onClick={(e) => {
+              e.preventDefault();
+              saveAudioToFile();
+            }}
+            disabled={!audioBuffer}
+          >
+            Save
+          </Button>
+        )}
       </form>
     </Form>
   );

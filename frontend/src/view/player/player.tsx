@@ -113,9 +113,15 @@ const Player = (props: PlayerProps) => {
         <div className="h-12 w-full px-4 pb-12 pt-4">
           {hasWindow && playerRef.current && (
             <SliderWithLabel
+              key={`${sliderValue[0]}-${sliderValue[1]}`}
               className=""
-              defaultValue={[0, playerRef.current.getDuration()]}
-              onValueChange={
+              defaultValue={[
+                sliderValue[0],
+                sliderValue[1]
+                  ? sliderValue[1]
+                  : playerRef.current.getDuration(),
+              ]}
+              onValueCommit={
                 setSliderValue as React.Dispatch<React.SetStateAction<number[]>>
               }
               step={1}

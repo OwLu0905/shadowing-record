@@ -6,6 +6,7 @@ import { useRecordMedia } from "@/hooks/useRecordMedia";
 import Player from "@/view/player/player";
 import Record from "@/view/records/Record";
 import WarningDialog from "@/components/common/warn-dialog";
+import History from "@/view/records/History";
 
 import ReactPlayer from "react-player";
 import toast from "react-hot-toast";
@@ -40,6 +41,7 @@ const RecordContainer = (props: RecordContainerProps) => {
   const [playing, setPlaying] = useState(false);
   const [hasWindow, setHasWindow] = useState(false);
 
+  console.log(sliderValue);
   const [warning, setWarning] = useState(false);
 
   useEffect(() => {
@@ -136,6 +138,7 @@ const RecordContainer = (props: RecordContainerProps) => {
           />
         </div>
       </section>
+      <History recordId={recordInfo.recordId} setSliderValue={setSliderValue} />
       <WarningDialog
         show={warning}
         handleClose={setWarning}

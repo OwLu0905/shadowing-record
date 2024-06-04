@@ -6,8 +6,6 @@ import { recordUuidSchema } from "@/schema/item-params";
 import { getAudiosById, getRecordById } from "@/db/record";
 
 import RecordContainer from "@/view/records/record-container";
-import History from "@/view/records/History";
-
 import {
   HydrationBoundary,
   QueryClient,
@@ -57,12 +55,9 @@ const RecordItemPage = async ({ params }: { params: { itemId: string } }) => {
 
   return (
     <>
-      <RecordContainer recordInfo={newData} />
-      <section className="container mx-auto flex-col md:flex">
-        <HydrationBoundary state={dehydrate(queryClient)}>
-          <History recordId={newData.recordId} />
-        </HydrationBoundary>
-      </section>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <RecordContainer recordInfo={newData} />
+      </HydrationBoundary>
     </>
   );
 };
