@@ -18,7 +18,7 @@ const MobileNav = (props: MobileNavProps) => {
   const { data: recordLists } = useRecordListsQuery(userId);
   const router = useRouter();
   return (
-    <aside className="mt-4 h-full">
+    <aside className="sticky top-0 mt-4 h-[100dvh]">
       <DrawerClose
         onClick={() => {
           router.push("/records");
@@ -28,7 +28,7 @@ const MobileNav = (props: MobileNavProps) => {
         <Plus className="h-5 w-5" />
       </DrawerClose>
 
-      <ScrollArea className="mx-4 flex h-[80dvh] flex-col items-start gap-y-2 truncate">
+      <ScrollArea className="mx-4 flex h-[100dvh] flex-grow flex-col items-start overflow-hidden pb-40 transition-opacity duration-300 ease-in data-[expand=true]:visible data-[expand=false]:invisible data-[expand=false]:opacity-0 data-[expand=true]:opacity-100 [&>div>div]:!block [&>div>div]:pr-4">
         {recordLists?.map((monthData) => {
           return (
             <div key={monthData.month}>

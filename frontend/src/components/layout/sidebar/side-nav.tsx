@@ -38,6 +38,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type SideNavProps = {
   userId: string;
@@ -67,7 +68,7 @@ const SideNav = ({ userId }: SideNavProps) => {
 
   return (
     <div
-      className="hidden flex-[0_0_auto] flex-col bg-card transition-all duration-300 ease-in-out data-[expand=false]:w-sidebar-close data-[expand=true]:w-sidebar-open md:flex"
+      className="sticky top-0 hidden h-[100dvh] flex-[0_0_auto] flex-col overflow-hidden bg-card transition-all duration-300 ease-in-out data-[expand=false]:w-sidebar-close data-[expand=true]:w-sidebar-open md:flex"
       data-expand={open}
     >
       <Button
@@ -94,14 +95,14 @@ const SideNav = ({ userId }: SideNavProps) => {
         </span>
       </Button>
 
-      <ul
-        className="mx-4 flex flex-col items-start gap-y-2 transition-opacity duration-300 ease-in data-[expand=true]:visible data-[expand=false]:invisible data-[expand=false]:opacity-0 data-[expand=true]:opacity-100"
+      <ScrollArea
+        className="mx-4 flex h-[100dvh] flex-col items-start overflow-hidden pb-10 transition-opacity duration-300 ease-in data-[expand=true]:visible data-[expand=false]:invisible data-[expand=false]:opacity-0 data-[expand=true]:opacity-100 [&>div>div]:!block [&>div>div]:pr-4"
         data-expand={open}
       >
         {recordLists?.map((monthData) => {
           return (
             <React.Fragment key={monthData.month}>
-              <div className="mb-2 mt-4 flex w-full items-center justify-between px-4 py-1 text-sm font-semibold text-muted-foreground shadow-card">
+              <div className="sticky top-0 mb-2 mt-4 flex w-full min-w-0 items-center justify-between bg-card px-4 py-1 text-sm font-semibold text-muted-foreground shadow-card">
                 <span>{monthData.month}</span>
                 <div className="flex items-center gap-x-2">
                   <CheckIcon className="h-4 w-4 text-emerald-500" />
@@ -114,17 +115,17 @@ const SideNav = ({ userId }: SideNavProps) => {
                   "yyyy-MM-dd hh:mm",
                 );
                 return (
-                  <li
+                  <div
                     key={i.recordId}
                     tabIndex={0}
                     className={cn(
-                      "group/item flex w-full rounded-full px-4 font-normal text-secondary-foreground transition-colors duration-300 ease-in-out hover:bg-primary/10 [&:has([data-state=open])]:bg-primary/10",
+                      "group/item my-3 flex w-full rounded-full px-4 font-normal text-secondary-foreground transition-colors duration-300 ease-in-out hover:bg-primary/10 [&:has([data-state=open])]:bg-primary/10",
                       i.recordId === params.itemId ? "bg-accent" : "",
                     )}
                   >
                     <HoverCard openDelay={500}>
                       <HoverCardTrigger asChild>
-                        <div className="flex w-full items-center truncate">
+                        <div className="flex w-full items-center">
                           <Headphones className="h-4 w-4" />
                           <Link
                             href={`/records/${i.recordId}`}
@@ -179,13 +180,13 @@ const SideNav = ({ userId }: SideNavProps) => {
                         </DropdownMenuGroup>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </li>
+                  </div>
                 );
               })}
             </React.Fragment>
           );
         })}
-      </ul>
+      </ScrollArea>
 
       <WarningDialog
         show={warning}
