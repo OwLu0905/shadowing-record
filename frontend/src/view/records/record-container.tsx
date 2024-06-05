@@ -41,7 +41,6 @@ const RecordContainer = (props: RecordContainerProps) => {
   const [playing, setPlaying] = useState(false);
   const [hasWindow, setHasWindow] = useState(false);
 
-  console.log(sliderValue);
   const [warning, setWarning] = useState(false);
 
   useEffect(() => {

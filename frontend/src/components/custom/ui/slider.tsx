@@ -36,7 +36,7 @@ const SliderWithLabel = React.forwardRef<
       {value?.map((i, idx) => {
         return (
           <SliderPrimitive.Thumb
-            key={i}
+            key={idx}
             ref={(node) => {
               const map = getMap();
               if (node) {
