@@ -1,17 +1,17 @@
 "use client";
 import ReactPlayer from "react-player";
-
 import { Button } from "@/components/ui/button";
-import { Play, Pause, RotateCw, FastForward, Volume2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-
-import * as Slider from "@radix-ui/react-slider";
-
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Toggle } from "@/components/ui/toggle";
+import * as Slider from "@radix-ui/react-slider";
+
+import { Play, Pause, RotateCw, Volume2, Repeat } from "lucide-react";
+import { DispatchWithoutAction } from "react";
 
 type PlayerActionsProps = {
   playerRef: React.RefObject<ReactPlayer>;
@@ -27,6 +27,7 @@ type PlayerActionsProps = {
   setVolume: (value: React.SetStateAction<number>) => void;
 
   disableActions: boolean;
+  dispatchLoop: DispatchWithoutAction;
 };
 const PlayerActions = (props: PlayerActionsProps) => {
   const {
@@ -39,6 +40,7 @@ const PlayerActions = (props: PlayerActionsProps) => {
     volume,
     setVolume,
     disableActions,
+    dispatchLoop,
   } = props;
 
   const rateListBack = [0.5, 0.75, 1];
@@ -83,10 +85,18 @@ const PlayerActions = (props: PlayerActionsProps) => {
           );
         })}
       </div>
-      <div className="col-span-3 col-start-1 flex justify-center xl:col-span-1 xl:col-start-2">
-        <Button size="sm" variant="ghost" disabled={disableActions}>
-          <FastForward className="h-4 w-4 rotate-180" />
-        </Button>
+      <div className="col-span-3 col-start-1 flex justify-center gap-0.5 xl:col-span-1 xl:col-start-2">
+        <Toggle
+          size="sm"
+          defaultPressed={true}
+          aria-label="Toggle bold"
+          onPressedChange={dispatchLoop}
+          disabled={disableActions}
+          className="w-10"
+        >
+          <Repeat className="h-4 w-4" />
+        </Toggle>
+
         <Button
           variant="ghost"
           size="sm"
@@ -112,9 +122,7 @@ const PlayerActions = (props: PlayerActionsProps) => {
             <Play className="h-4 w-4" />
           )}
         </Button>
-        <Button size="sm" variant="ghost" disabled={disableActions}>
-          <FastForward className="h-4 w-4" />
-        </Button>
+
         <Button
           size="sm"
           variant="ghost"

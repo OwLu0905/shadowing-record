@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useReducer, useRef, useState } from "react";
 import ReactPlayer from "react-player";
 import { format } from "date-fns/format";
 
@@ -60,21 +60,39 @@ const Player = (props: PlayerProps) => {
 
   const [playbackRate, setPlaybackRate] = useState(1);
 
+  const [loop, dispatchLoop] = useReducer((value) => !value, true);
+
   const url = recordInfo.shadowingUrl;
 
   const [volume, setVolume] = useState(1);
 
   const isRecording = mediaState === "recording" || mediaState === "paused";
 
+  const slideRef = useRef<HTMLSpanElement>(null);
+
   const handleProgress = () => {
     if (playerRef.current) {
       const currentTime = playerRef.current.getCurrentTime();
+
+      // NOTE: show current progressbar
+      // if (slideRef.current) {
+      //   let slider = slideRef.current.firstChild as HTMLSpanElement;
+      //   if (!slider) return;
+      //   slideRef.current.classList.add("bg-primary/10", "rounded-full");
+      //   const proportion =
+      //     (currentTime / playerRef.current.getDuration()) * 100;
+      //   slider.style.clipPath = `polygon(0% 0%, 0% 100%, ${proportion}% 100%, ${proportion}% 0%)`;
+      //   slider.style.zIndex = "0";
+      // }
 
       if (currentTime <= sliderValue[0]) {
         setPlaying(false);
       }
       if (currentTime >= sliderValue[1]) {
-        setPlaying(false);
+        if (loop) {
+          playerRef.current?.seekTo(sliderValue[0]);
+        }
+        setPlaying(loop);
       }
     }
   };
@@ -89,6 +107,9 @@ const Player = (props: PlayerProps) => {
     setSliderValue([0, e.getDuration()]);
   }
 
+  // useEffect(()=>{})
+
+  // console.log();
   return (
     <>
       <div className="mb-4 w-full">
@@ -113,6 +134,7 @@ const Player = (props: PlayerProps) => {
         <div className="h-12 w-full px-4 pb-12 pt-4">
           {hasWindow && playerRef.current && (
             <SliderWithLabel
+              ref={slideRef}
               value={sliderValue}
               step={1}
               max={playerRef.current?.getDuration() ?? 100}
@@ -138,6 +160,7 @@ const Player = (props: PlayerProps) => {
             volume={volume}
             setVolume={setVolume}
             disableActions={isRecording}
+            dispatchLoop={dispatchLoop}
           />
         </div>
       </div>
