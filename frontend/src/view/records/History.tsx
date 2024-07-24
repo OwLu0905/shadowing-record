@@ -26,7 +26,7 @@ import { deleteaAudioById } from "@/db/record";
 
 type HistoryProps = {
   recordId: string;
-  setSliderValue: React.Dispatch<React.SetStateAction<SliderState>>;
+  setSliderValue: React.Dispatch<React.SetStateAction<SliderState | undefined>>;
 };
 
 const History = (props: HistoryProps) => {

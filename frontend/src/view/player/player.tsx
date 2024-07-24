@@ -28,8 +28,8 @@ type PlayerProps = {
   hasWindow: boolean;
   setHasWindow: React.Dispatch<React.SetStateAction<boolean>>;
 
-  sliderValue: SliderState;
-  setSliderValue: React.Dispatch<React.SetStateAction<SliderState>>;
+  sliderValue: SliderState | undefined;
+  setSliderValue: React.Dispatch<React.SetStateAction<SliderState | undefined>>;
 
   mediaState: RecordingState;
   onSyncRecord: (sync: boolean) => Promise<void>;
@@ -85,6 +85,8 @@ const Player = (props: PlayerProps) => {
       //   slider.style.zIndex = "0";
       // }
 
+      if (!sliderValue) return;
+
       if (currentTime <= sliderValue[0]) {
         setPlaying(false);
       }
@@ -102,14 +104,17 @@ const Player = (props: PlayerProps) => {
   }
 
   function calculateDuration(e: ReactPlayer) {
-    forms.setValue("start", "0");
-    forms.setValue("end", e.getDuration().toString());
-    setSliderValue([0, e.getDuration()]);
+    if (sliderValue) {
+      forms.setValue("start", `${sliderValue[0]}`);
+      forms.setValue("start", `${sliderValue[1]}`);
+      setSliderValue(sliderValue);
+    } else {
+      forms.setValue("start", "0");
+      forms.setValue("end", e.getDuration().toString());
+      setSliderValue([0, e.getDuration()]);
+    }
   }
 
-  // useEffect(()=>{})
-
-  // console.log();
   return (
     <>
       <div className="mb-4 w-full">
@@ -139,10 +144,14 @@ const Player = (props: PlayerProps) => {
               step={1}
               max={playerRef.current?.getDuration() ?? 100}
               disabled={isRecording}
-              subLabel={[
-                format(sliderValue[0] * 1000, "mm:ss"),
-                format(sliderValue[1] * 1000, "mm:ss"),
-              ]}
+              subLabel={
+                !sliderValue
+                  ? sliderValue
+                  : [
+                      format(sliderValue[0] * 1000, "mm:ss"),
+                      format(sliderValue[1] * 1000, "mm:ss"),
+                    ]
+              }
               onValueChange={
                 setSliderValue as React.Dispatch<React.SetStateAction<number[]>>
               }

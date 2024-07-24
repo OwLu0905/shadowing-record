@@ -15,7 +15,7 @@ import { DispatchWithoutAction } from "react";
 
 type PlayerActionsProps = {
   playerRef: React.RefObject<ReactPlayer>;
-  sliderValue: [start: number, end: number];
+  sliderValue: [start: number, end: number] | undefined;
 
   playing: boolean;
   setPlaying: (value: React.SetStateAction<boolean>) => void;
@@ -101,6 +101,8 @@ const PlayerActions = (props: PlayerActionsProps) => {
           variant="ghost"
           size="sm"
           onClick={() => {
+            if (!sliderValue) return;
+
             if (playerRef.current) {
               const currentTime = playerRef.current.getCurrentTime();
               if (
@@ -108,8 +110,6 @@ const PlayerActions = (props: PlayerActionsProps) => {
                 currentTime <= sliderValue[0]
               ) {
                 playerRef.current?.seekTo(sliderValue[0]);
-                setPlaying(true);
-                return;
               }
             }
             setPlaying((prev) => !prev);
@@ -127,6 +127,8 @@ const PlayerActions = (props: PlayerActionsProps) => {
           size="sm"
           variant="ghost"
           onClick={() => {
+            if (!sliderValue) return;
+
             playerRef.current?.seekTo(sliderValue[0]);
             setPlaying(true);
           }}

@@ -37,7 +37,9 @@ const RecordContainer = (props: RecordContainerProps) => {
 
   const playerRef = useRef<ReactPlayer>(null);
 
-  const [sliderValue, setSliderValue] = useState<SliderState>([0, 0]);
+  const [sliderValue, setSliderValue] = useState<SliderState | undefined>(
+    undefined,
+  );
   const [playing, setPlaying] = useState(false);
   const [hasWindow, setHasWindow] = useState(false);
 
@@ -62,6 +64,8 @@ const RecordContainer = (props: RecordContainerProps) => {
     try {
       await utils.start();
 
+      if (!sliderValue) return;
+
       if (sync && playerRef.current) {
         playerRef.current?.seekTo(sliderValue[0]);
 
@@ -85,6 +89,8 @@ const RecordContainer = (props: RecordContainerProps) => {
   function onSyncStop() {
     utils.stop();
     setPlaying(false);
+
+    if (!sliderValue) return;
 
     forms.setValue("start", sliderValue[0].toString());
     forms.setValue("end", sliderValue[1].toString());
@@ -132,8 +138,8 @@ const RecordContainer = (props: RecordContainerProps) => {
             state={state}
             utils={utils}
             forms={forms}
-            startTime={sliderValue[0]}
-            endTime={sliderValue[1]}
+            startTime={sliderValue ? sliderValue[0] : 0}
+            endTime={sliderValue ? sliderValue[1] : 0}
           />
         </div>
       </section>
